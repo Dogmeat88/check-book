@@ -1,5 +1,7 @@
 package nz.net.pseudo.checkbook;
 
+import android.content.Context;
+
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
@@ -15,6 +17,12 @@ public class EventsParser {
 
     private final int ONE_MIN_IN_MS = 60000;
     private final int FIFTEEN_MIN_IN_MS = 15*ONE_MIN_IN_MS;
+
+    Context context;
+
+    public EventsParser(Context context) {
+        this.context=context;
+    }
 
     public Events parseEvents(Events rawEvents){
 
@@ -43,7 +51,7 @@ public class EventsParser {
         while(durationStartDate<durationEndDate){
 
             Event bookEvent = new Event();
-            bookEvent.setSummary("BOOK ME");
+            bookEvent.setSummary(context.getString(R.string.book_event_title));
             bookEvent.setStart(new EventDateTime().setDateTime(new DateTime(durationStartDate)));
 
             //Set the end datetime 15min after the last event (including "Book" events) and round it up if it is not 1/4 hour

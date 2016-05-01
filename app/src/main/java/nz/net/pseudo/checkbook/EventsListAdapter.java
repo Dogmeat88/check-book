@@ -22,10 +22,12 @@ import java.util.Date;
 public class EventsListAdapter extends BaseAdapter {
     private Context context;
     private Events events;
+    SimpleDateFormat systemDateFormat;
 
     public EventsListAdapter(Context context, Events events) {
         this.context=context;
         this.events = events;
+        systemDateFormat = AppUtils.getLocalisedDateTimeFormatter(context);
     }
 
     public Events getEvents() {
@@ -62,15 +64,13 @@ public class EventsListAdapter extends BaseAdapter {
         TextView eventSummary = (TextView) convertView.findViewById(R.id.event_summary);
         eventSummary.setText(eventItem.getSummary());
 
-        SimpleDateFormat simpleDateFormat = AppUtils.getLocalisedDateTimeFormatter(context);
-
         TextView eventStartDate = (TextView) convertView.findViewById(R.id.event_start_date);
         DateTime startDateTime = eventItem.getStart().getDateTime();
-        eventStartDate.setText(simpleDateFormat.format(new Date(startDateTime.getValue())));
+        eventStartDate.setText(systemDateFormat.format(new Date(startDateTime.getValue())));
 
         TextView eventEndDate = (TextView) convertView.findViewById(R.id.event_end_date);
         DateTime endDateTime = eventItem.getEnd().getDateTime();
-        eventEndDate.setText(simpleDateFormat.format(new Date(endDateTime.getValue())));
+        eventEndDate.setText(systemDateFormat.format(new Date(endDateTime.getValue())));
 
         LinearLayout eventContainerLinearLayout = (LinearLayout)convertView.findViewById(R.id.event_container);
 
@@ -81,8 +81,6 @@ public class EventsListAdapter extends BaseAdapter {
         int itemHeightPixels = (int) (itemDuration * scale + 0.5f);
         eventContainerLinearLayout.getLayoutParams().height = itemHeightPixels;
 
-
         return convertView;
-
     }
 }

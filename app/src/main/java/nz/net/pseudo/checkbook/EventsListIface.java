@@ -7,4 +7,5 @@ import com.google.api.services.calendar.model.Events;
  */
 public interface EventsListIface {
     void onSuccess(Events events);
+    void onFail();
 }

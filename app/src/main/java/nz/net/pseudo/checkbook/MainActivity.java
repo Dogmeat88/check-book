@@ -4,6 +4,7 @@ import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
@@ -13,7 +14,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
@@ -39,7 +42,7 @@ import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, ResourceListIface, EventsListIface {
+public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, ResourceListIface, EventsListIface, SwipeRefreshLayout.OnRefreshListener {
     private final String TAG = this.getClass().getSimpleName();
 
     private ActivityMainBinding mBinding;
@@ -47,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private ResourceListAdapter resourceListAdapter;
     private EventsListAdapter eventsListAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
+    private CalendarResource selectedResource;
 
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 R.string.navigation_drawer_open,  /* "open drawer" description */
                 R.string.navigation_drawer_close  /* "close drawer" description */
         );
+        mDrawerToggle.setDrawerIndicatorEnabled(true);
         mBinding.navDrawerLayout.addDrawerListener(mDrawerToggle);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -91,19 +96,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, ((CalendarResource)resourceListAdapter.getItem(position)).getResourceEmail());
                 mBinding.navDrawerLayout.closeDrawer(GravityCompat.START);
-                new EventsListAsyncTask(
-                          MainActivity.this
-                        , mCredential
-                        , MainActivity.this
-                        , ((CalendarResource)resourceListAdapter.getItem(position)).getResourceEmail()
-                ).execute();
+                selectedResource = ((CalendarResource)resourceListAdapter.getItem(position));
+                onRefresh();
             }
         });
 
         Events events = new Events();
         events.setItems(new ArrayList<Event>());
         eventsListAdapter = new EventsListAdapter(this, events);
-        mBinding.mainList.setAdapter(eventsListAdapter);
+        mBinding.resourceEventsList.setAdapter(eventsListAdapter);
+
+        mBinding.resourceEventsRefreshLayout.setOnRefreshListener(this);
 
         init();
     }
@@ -332,7 +335,35 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onSuccess(Events events) {
         Log.d(TAG, "Got events");
-        EventsParser eventsParser = new EventsParser();
+        EventsParser eventsParser = new EventsParser(this);
         eventsListAdapter.setEvents(eventsParser.parseEvents(events));
+        mBinding.resourceEventsRefreshLayout.setRefreshing(false);
+    }
+
+    @Override
+    public void onFail() {
+        mBinding.resourceEventsRefreshLayout.setRefreshing(false);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.events_loading_error_title)
+                .setMessage(R.string.events_loading_error_content)
+                .setCancelable(true)
+                .setNegativeButton(
+                    getString(R.string.okay_btn),
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    }).show();
+    }
+
+    @Override
+    public void onRefresh() {
+        mBinding.resourceEventsRefreshLayout.setRefreshing(true);
+        new EventsListAsyncTask(
+                MainActivity.this
+                , mCredential
+                , MainActivity.this
+                , selectedResource.getResourceEmail()
+        ).execute();
     }
 }

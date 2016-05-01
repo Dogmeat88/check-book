@@ -11,5 +11,11 @@
     <string name="resources_not_loaded">No Resources Loaded</string>
     <string name="resources_loading">Loading Resources</string>
 
-    <string name="events_loading">Loading Events</string>
+    <string name="events_loading_error_title">Loading Events Error</string>
+    <string name="events_loading_error_content">There was an error loading Events. Please try again.</string>
+
+    <string name="book_event_title">Quick Book</string>
+
+
+    <string name="okay_btn">Okay</string>
 </resources>

@@ -23,14 +23,10 @@ public class EventsListAsyncTask extends AsyncTask<Void, Void, Events> {
     private final String TAG = this.getClass().getSimpleName();
     private Calendar mCalendar;
     private EventsListIface eventsListImpl;
-    ProgressDialog progressDialog;
-    String calendarResourceId;
+    private String calendarResourceId;
 
     public EventsListAsyncTask(Context context, GoogleAccountCredential credential, EventsListIface eventsListImpl, String calendarResourceId) {
         this.eventsListImpl=eventsListImpl;
-        progressDialog = new ProgressDialog(context);
-        progressDialog.setTitle(R.string.progress_dialogue_title);
-        progressDialog.setMessage(context.getString(R.string.events_loading));
         this.calendarResourceId=calendarResourceId;
 
 
@@ -68,17 +64,11 @@ public class EventsListAsyncTask extends AsyncTask<Void, Void, Events> {
         }
     }
 
-
-    @Override
-    protected void onPreExecute() {
-        progressDialog.show();
-    }
-
     @Override
     protected void onPostExecute(Events events) {
-        progressDialog.hide();
         if (events == null) {
             Log.e(TAG, "Result is null");
+            eventsListImpl.onFail();
         } else {
             eventsListImpl.onSuccess(events);
         }
