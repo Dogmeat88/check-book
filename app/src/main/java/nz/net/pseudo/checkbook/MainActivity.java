@@ -12,6 +12,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -19,6 +21,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -80,10 +83,20 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 R.string.navigation_drawer_close  /* "close drawer" description */
         );
         mDrawerToggle.setDrawerIndicatorEnabled(true);
+        mDrawerToggle.syncState();
         mBinding.navDrawerLayout.addDrawerListener(mDrawerToggle);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
 
         CalendarResources calendarResources = new CalendarResources();
@@ -97,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 Log.d(TAG, ((CalendarResource)resourceListAdapter.getItem(position)).getResourceEmail());
                 mBinding.navDrawerLayout.closeDrawer(GravityCompat.START);
                 selectedResource = ((CalendarResource)resourceListAdapter.getItem(position));
+                mBinding.setResource(selectedResource);
                 onRefresh();
             }
         });
@@ -109,6 +123,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mBinding.resourceEventsRefreshLayout.setOnRefreshListener(this);
 
         init();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.settings, menu);
+        return true;
     }
 
     @Override

@@ -17,6 +17,7 @@ public class EventsParser {
 
     private final int ONE_MIN_IN_MS = 60000;
     private final int FIFTEEN_MIN_IN_MS = 15*ONE_MIN_IN_MS;
+    private final int TWO_HOURS_IN_MS = 120*ONE_MIN_IN_MS;
 
     Context context;
 
@@ -37,6 +38,26 @@ public class EventsParser {
                 fillEvents.addAll(fillGaps(currentEvent, nextEvent));
             }
         }
+
+        //must be at least one entry
+        if(rawEvents.getItems().size()>0) {
+            //Overshoot the last event by a couple of hours and populate with Book events
+            Event lastEvent = rawEvents.getItems().get(rawEvents.getItems().size() - 1);
+
+            Event overshootEvent = new Event();
+            overshootEvent.setSummary(context.getString(R.string.book_event_title));
+
+            EventDateTime overshootEventStartDateTime = new EventDateTime();
+            overshootEventStartDateTime.setDateTime(AppUtils.roundFifteenMinutes(new DateTime(lastEvent.getEnd().getDateTime().getValue() + TWO_HOURS_IN_MS)));
+            overshootEvent.setStart(overshootEventStartDateTime);
+
+            EventDateTime overshootEventEndDateTime = new EventDateTime();
+            overshootEventEndDateTime.setDateTime(new DateTime(overshootEventStartDateTime.getDateTime().getValue() + FIFTEEN_MIN_IN_MS));
+            overshootEvent.setEnd(overshootEventEndDateTime);
+
+            fillEvents.addAll(fillGaps(lastEvent, overshootEvent));
+        }
+
 
         rawEvents.setItems(fillEvents);
 

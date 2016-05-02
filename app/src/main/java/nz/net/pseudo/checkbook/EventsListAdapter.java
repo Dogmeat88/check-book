@@ -1,7 +1,6 @@
 package nz.net.pseudo.checkbook;
 
 import android.content.Context;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,7 +56,7 @@ public class EventsListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_list_item, parent, false);
+        convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_list_item, parent, false);
 
         Event eventItem = events.getItems().get(position);
 

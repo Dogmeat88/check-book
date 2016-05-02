@@ -46,7 +46,7 @@ public class ResourceListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.nav_list_item, parent, false);
+        convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.resource_list_item, parent, false);
 
         TextView resourceName = (TextView) convertView.findViewById(R.id.resource_name);
         resourceName.setText(calendarResources.getItems().get(position).getResourceName());
