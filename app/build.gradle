@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
-        applicationId "nz.net.pseudo.meetingroom"
+        applicationId "nz.net.pseudo.checkbook"
         minSdkVersion 11
         targetSdkVersion 23
         versionCode 1

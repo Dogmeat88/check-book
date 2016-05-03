@@ -3,11 +3,13 @@ package nz.net.pseudo.checkbook;
 import android.content.Context;
 
 import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,18 +31,36 @@ public class EventsParser {
 
         List<Event> fillEvents = new ArrayList<>();
 
-        for(int i = 0; i < rawEvents.getItems().size(); i++) {
-            Event currentEvent = rawEvents.getItems().get(i);
-            fillEvents.add(currentEvent);
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        //Subtract 15min before running calculations
+        now.add(java.util.Calendar.MINUTE, -15);
 
-            if(i+1 < rawEvents.getItems().size()) {
-                Event nextEvent = rawEvents.getItems().get(i + 1);
-                fillEvents.addAll(fillGaps(currentEvent, nextEvent));
-            }
-        }
+        //Past event is 15min ago till now
+        DateTime pastDateTime = AppUtils.roundFifteenMinutes(new DateTime(now.getTime()));
+        EventDateTime pastEventDateTime= new EventDateTime();
+        pastEventDateTime.setDateTime(pastDateTime);
+        Event pastEvent = new Event();
+        pastEvent.setEnd(pastEventDateTime);
 
         //must be at least one entry
         if(rawEvents.getItems().size()>0) {
+
+            //fill events leading up to the first event
+            if(rawEvents.getItems().get(0).getStart().getDateTime().getValue()>pastEvent.getEnd().getDateTime().getValue()){
+                fillEvents.addAll(fillGaps(pastEvent, rawEvents.getItems().get(0)));
+            }
+
+            //Loop through the events and fill in the gaps with quick book events
+            for(int i = 0; i < rawEvents.getItems().size(); i++) {
+                Event currentEvent = rawEvents.getItems().get(i);
+                fillEvents.add(currentEvent);
+
+                if(i+1 < rawEvents.getItems().size()) {
+                    Event nextEvent = rawEvents.getItems().get(i + 1);
+                    fillEvents.addAll(fillGaps(currentEvent, nextEvent));
+                }
+            }
+
             //Overshoot the last event by a couple of hours and populate with Book events
             Event lastEvent = rawEvents.getItems().get(rawEvents.getItems().size() - 1);
 
@@ -56,6 +76,19 @@ public class EventsParser {
             overshootEvent.setEnd(overshootEventEndDateTime);
 
             fillEvents.addAll(fillGaps(lastEvent, overshootEvent));
+        } else {
+
+            //If there are no events, then add a few book events after the current time
+            now.add(java.util.Calendar.HOUR, 1);
+            DateTime futureStartDateTime = AppUtils.roundFifteenMinutes(new DateTime(now.getTime()));
+            EventDateTime futureStartEventDateTime = new EventDateTime();
+            futureStartEventDateTime.setDateTime(futureStartDateTime);
+
+            Event futureEvent = new Event();
+            futureEvent.setStart(futureStartEventDateTime);
+
+            fillEvents.addAll(fillGaps(pastEvent, futureEvent));
+
         }
 
 

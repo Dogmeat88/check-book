@@ -379,12 +379,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     @Override
     public void onRefresh() {
-        mBinding.resourceEventsRefreshLayout.setRefreshing(true);
-        new EventsListAsyncTask(
-                MainActivity.this
-                , mCredential
-                , MainActivity.this
-                , selectedResource.getResourceEmail()
-        ).execute();
+        if(selectedResource!=null) {
+            mBinding.resourceEventsRefreshLayout.setRefreshing(true);
+            new EventsListAsyncTask(
+                    MainActivity.this
+                    , mCredential
+                    , MainActivity.this
+                    , selectedResource.getResourceEmail()
+            ).execute();
+        }else{
+           mBinding.resourceEventsRefreshLayout.setRefreshing(false);
+        }
     }
 }

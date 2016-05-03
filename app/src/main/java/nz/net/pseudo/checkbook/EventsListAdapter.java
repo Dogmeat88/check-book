@@ -1,6 +1,7 @@
 package nz.net.pseudo.checkbook;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,6 +73,10 @@ public class EventsListAdapter extends BaseAdapter {
         eventEndDate.setText(systemDateFormat.format(new Date(endDateTime.getValue())));
 
         LinearLayout eventContainerLinearLayout = (LinearLayout)convertView.findViewById(R.id.event_container);
+
+        if(eventItem.getCreator()==null) {
+            eventContainerLinearLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.quickBookEvent));
+        }
 
         //Set the item height based on its duration
         Long itemDuration = (endDateTime.getValue()-startDateTime.getValue())/15000;
