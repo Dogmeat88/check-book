@@ -12,8 +12,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -49,10 +47,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private final String TAG = this.getClass().getSimpleName();
 
     private ActivityMainBinding mBinding;
-    private GoogleAccountCredential mCredential;
+    private GoogleAccountCredential credential;
     private ResourceListAdapter resourceListAdapter;
     private EventsListAdapter eventsListAdapter;
-    private ActionBarDrawerToggle mDrawerToggle;
+    private ActionBarDrawerToggle drawerToggle;
     private CalendarResource selectedResource;
 
 
@@ -74,17 +72,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         super.onCreate(savedInstanceState);
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-        mCredential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
+        credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
 
-        mDrawerToggle = new ActionBarDrawerToggle(
+        drawerToggle = new ActionBarDrawerToggle(
                 this,                  /* host Activity */
                 mBinding.navDrawerLayout,         /* DrawerLayout object */
                 R.string.navigation_drawer_open,  /* "open drawer" description */
                 R.string.navigation_drawer_close  /* "close drawer" description */
         );
-        mDrawerToggle.setDrawerIndicatorEnabled(true);
-        mDrawerToggle.syncState();
-        mBinding.navDrawerLayout.addDrawerListener(mDrawerToggle);
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        drawerToggle.syncState();
+        mBinding.navDrawerLayout.addDrawerListener(drawerToggle);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
@@ -117,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         Events events = new Events();
         events.setItems(new ArrayList<Event>());
-        eventsListAdapter = new EventsListAdapter(this, events);
+        eventsListAdapter = new EventsListAdapter(this, events, credential);
         mBinding.resourceEventsList.setAdapter(eventsListAdapter);
 
         mBinding.resourceEventsRefreshLayout.setOnRefreshListener(this);
@@ -136,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
         // Handle your other action bar items...
@@ -164,12 +162,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private void init() {
         if (! isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
-        } else if (mCredential.getSelectedAccountName() == null) {
+        } else if (credential.getSelectedAccountName() == null) {
             chooseAccount();
         } else if (! isDeviceOnline()) {
             Log.e(TAG,"No network connection available.");
         } else {
-            new ResourceListAsyncTask(this, mCredential, this).execute();
+            new ResourceListAsyncTask(this, credential, this).execute();
         }
     }
 
@@ -189,12 +187,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 this, Manifest.permission.GET_ACCOUNTS)) {
             String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME_KEY, null);
             if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
+                credential.setSelectedAccountName(accountName);
                 init();
             } else {
                 // Start a dialog from which the user can choose an accountx
                 startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
+                        credential.newChooseAccountIntent(),
                         REQUEST_ACCOUNT_PICKER);
             }
         } else {
@@ -242,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         SharedPreferences.Editor editor = settings.edit();
                         editor.putString(PREF_ACCOUNT_NAME_KEY, accountName);
                         editor.apply();
-                        mCredential.setSelectedAccountName(accountName);
+                        credential.setSelectedAccountName(accountName);
                         init();
                     }
                 }
@@ -383,7 +381,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             mBinding.resourceEventsRefreshLayout.setRefreshing(true);
             new EventsListAsyncTask(
                     MainActivity.this
-                    , mCredential
+                    , credential
                     , MainActivity.this
                     , selectedResource.getResourceEmail()
             ).execute();

@@ -23,7 +23,14 @@ public class AppUtils {
      */
     public static SimpleDateFormat getLocalisedDateTimeFormatter(Context context){
         //Use system date time format
-        SimpleDateFormat sdf = new SimpleDateFormat(AppUtils.getLocalisedDateFormat(context)+" "+AppUtils.getLocalisedTimeFormat(context));
+        SimpleDateFormat sdf = new SimpleDateFormat(getLocalisedDateFormat(context)+" "+getLocalisedTimeFormat(context));
+        sdf.setTimeZone(TimeZone.getDefault());
+        return sdf;
+    }
+
+    public static SimpleDateFormat getLocalisedTimeFormatter(Context context){
+        //Use system date time format
+        SimpleDateFormat sdf = new SimpleDateFormat(getLocalisedTimeFormat(context));
         sdf.setTimeZone(TimeZone.getDefault());
         return sdf;
     }

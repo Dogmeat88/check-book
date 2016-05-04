@@ -6,5 +6,5 @@
 
     <color name="quickBookEvent">#D3D3D3</color>
     <color name="othersEvent">#C2F4FF</color>
-    <color name="myEvent">#D7FF9D</color>
+    <color name="usersEvent">#D7FF9D</color>
 </resources>

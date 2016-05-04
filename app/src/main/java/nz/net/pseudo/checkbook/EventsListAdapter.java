@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
@@ -22,12 +23,14 @@ import java.util.Date;
 public class EventsListAdapter extends BaseAdapter {
     private Context context;
     private Events events;
-    SimpleDateFormat systemDateFormat;
+    private SimpleDateFormat systemTimeFormat;
+    private GoogleAccountCredential credential;
 
-    public EventsListAdapter(Context context, Events events) {
+    public EventsListAdapter(Context context, Events events, GoogleAccountCredential credential) {
         this.context=context;
         this.events = events;
-        systemDateFormat = AppUtils.getLocalisedDateTimeFormatter(context);
+        this.systemTimeFormat = AppUtils.getLocalisedTimeFormatter(context);
+        this.credential=credential;
     }
 
     public Events getEvents() {
@@ -61,21 +64,37 @@ public class EventsListAdapter extends BaseAdapter {
 
         Event eventItem = events.getItems().get(position);
 
-        TextView eventSummary = (TextView) convertView.findViewById(R.id.event_summary);
-        eventSummary.setText(eventItem.getSummary());
+        if(eventItem.getSummary()!=null) {
+            TextView eventSummary = (TextView) convertView.findViewById(R.id.event_summary);
+            eventSummary.setText(eventItem.getSummary());
+        }
 
-        TextView eventStartDate = (TextView) convertView.findViewById(R.id.event_start_date);
+        if(eventItem.getCreator()!=null) {
+            TextView eventCreator = (TextView) convertView.findViewById(R.id.event_creator);
+            if(eventItem.getCreator().getDisplayName()!=null) {
+                eventCreator.setText(eventItem.getCreator().getDisplayName());
+            }else if(eventItem.getCreator().getEmail()!=null){
+                eventCreator.setText(eventItem.getCreator().getEmail());
+            }
+        }
+
+        TextView eventStartEndTime = (TextView) convertView.findViewById(R.id.event_start_end_time);
         DateTime startDateTime = eventItem.getStart().getDateTime();
-        eventStartDate.setText(systemDateFormat.format(new Date(startDateTime.getValue())));
-
-        TextView eventEndDate = (TextView) convertView.findViewById(R.id.event_end_date);
         DateTime endDateTime = eventItem.getEnd().getDateTime();
-        eventEndDate.setText(systemDateFormat.format(new Date(endDateTime.getValue())));
+        eventStartEndTime.setText(systemTimeFormat.format(new Date(startDateTime.getValue()))+"-"+systemTimeFormat.format(new Date(endDateTime.getValue())));
+
 
         LinearLayout eventContainerLinearLayout = (LinearLayout)convertView.findViewById(R.id.event_container);
 
         if(eventItem.getCreator()==null) {
+            //Probably Quickbook event
             eventContainerLinearLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.quickBookEvent));
+        }else if(eventItem.getCreator().getEmail().equals(credential.getSelectedAccountName())){
+            //Users event
+            eventContainerLinearLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.usersEvent));
+        }else{
+            //Other Users event
+            eventContainerLinearLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.othersEvent));
         }
 
         //Set the item height based on its duration
