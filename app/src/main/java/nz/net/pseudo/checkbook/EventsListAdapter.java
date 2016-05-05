@@ -98,7 +98,7 @@ public class EventsListAdapter extends BaseAdapter {
         }
 
         //Set the item height based on its duration
-        Long itemDuration = (endDateTime.getValue()-startDateTime.getValue())/15000;
+        Long itemDuration = (endDateTime.getValue()-startDateTime.getValue())/20000;
         //Scale based on phones DPI
         float scale = context.getResources().getDisplayMetrics().density;
         int itemHeightPixels = (int) (itemDuration * scale + 0.5f);

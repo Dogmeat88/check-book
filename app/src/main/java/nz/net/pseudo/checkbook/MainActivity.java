@@ -101,8 +101,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         calendarResources.setItems(new ArrayList<CalendarResource>());
         resourceListAdapter = new ResourceListAdapter(calendarResources);
 
-        mBinding.navDrawerList.setAdapter(resourceListAdapter);
-        mBinding.navDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mBinding.resourceSearchview.setOnQueryTextListener(resourceListAdapter);
+        mBinding.resourceList.setAdapter(resourceListAdapter);
+        mBinding.resourceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, ((CalendarResource)resourceListAdapter.getItem(position)).getResourceEmail());
