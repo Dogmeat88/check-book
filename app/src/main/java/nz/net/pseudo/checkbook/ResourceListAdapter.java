@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * Created by i on 25/04/16.
  */
-public class ResourceListAdapter extends BaseAdapter implements SearchView.OnQueryTextListener, Filterable {
+public class ResourceListAdapter extends BaseAdapter implements Filterable {
     private CalendarResources filteredCalendarResources;
     private ResourceFilter resourceFilter;
 
@@ -76,17 +76,6 @@ public class ResourceListAdapter extends BaseAdapter implements SearchView.OnQue
 
         return convertView;
 
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        return false;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String filterText) {
-        getFilter().filter(filterText);
-        return true;
     }
 
     @Override

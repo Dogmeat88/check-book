@@ -18,6 +18,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,7 +44,7 @@ import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, ResourceListIface, EventsListIface, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, ResourceListIface, EventsListIface, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener {
     private final String TAG = this.getClass().getSimpleName();
 
     private ActivityMainBinding mBinding;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private EventsListAdapter eventsListAdapter;
     private ActionBarDrawerToggle drawerToggle;
     private CalendarResource selectedResource;
+    private SharedPreferences settings;
 
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         calendarResources.setItems(new ArrayList<CalendarResource>());
         resourceListAdapter = new ResourceListAdapter(calendarResources);
 
-        mBinding.resourceSearchview.setOnQueryTextListener(resourceListAdapter);
+        mBinding.resourceSearchview.setOnQueryTextListener(this);
         mBinding.resourceList.setAdapter(resourceListAdapter);
         mBinding.resourceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -120,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mBinding.resourceEventsList.setAdapter(eventsListAdapter);
 
         mBinding.resourceEventsRefreshLayout.setOnRefreshListener(this);
+
+        this.settings = getSharedPreferences(getString(R.string.global_shared_preferences_id),Context.MODE_PRIVATE);
 
         init();
     }
@@ -350,6 +354,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     @Override
     public void onSuccess(CalendarResources calendarResources) {
         resourceListAdapter.setCalendarResources(calendarResources);
+        mBinding.resourceSearchview.setQuery(settings.getString(getString(R.string.resource_filter_id),""),true);
     }
 
     @Override
@@ -389,5 +394,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }else{
            mBinding.resourceEventsRefreshLayout.setRefreshing(false);
         }
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        onQueryTextChange(query);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String filterText) {
+        resourceListAdapter.getFilter().filter(filterText);
+        settings.edit().putString(getString(R.string.resource_filter_id), filterText).commit();
+        return true;
     }
 }

@@ -2,4 +2,5 @@
 <resources>
     <string name="resource_filter_id">resourceFilterId</string>
 
+    <string name="global_shared_preferences_id">globalSharedPreferences</string>
 </resources>
