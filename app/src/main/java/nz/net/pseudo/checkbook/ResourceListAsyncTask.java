@@ -15,15 +15,18 @@ import com.google.api.services.admin.directory.model.CalendarResources;
 
 /**
  * Created by i on 24/04/16.
+ * Get a list of resources(rooms etc)
  */
 public class ResourceListAsyncTask extends AsyncTask<Void, Void, CalendarResources> {
     private final String TAG = this.getClass().getSimpleName();
     private Directory mService;
     private ResourceListIface resourceListImpl;
-    ProgressDialog progressDialog;
+    private ProgressDialog progressDialog;
+    private Context context;
 
     public ResourceListAsyncTask(Context context, GoogleAccountCredential credential, ResourceListIface resourceListImpl) {
         this.resourceListImpl=resourceListImpl;
+        this.context=context;
         progressDialog = new ProgressDialog(context);
         progressDialog.setTitle(R.string.progress_dialogue_title);
         progressDialog.setMessage(context.getString(R.string.resources_loading));
@@ -35,10 +38,6 @@ public class ResourceListAsyncTask extends AsyncTask<Void, Void, CalendarResourc
         mService = new Directory.Builder(transport, jsonFactory, credential).build();
     }
 
-    /**
-     * Background task to call Directory API.
-     * @param params no parameters needed for this task.
-     */
     @Override
     protected CalendarResources doInBackground(Void... params) {
         try {
@@ -59,9 +58,9 @@ public class ResourceListAsyncTask extends AsyncTask<Void, Void, CalendarResourc
     protected void onPostExecute(CalendarResources calendarResources) {
         progressDialog.hide();
         if (calendarResources == null) {
-            Log.e(TAG, "Result is null");
+            resourceListImpl.onFail(this.context.getString(R.string.resource_loading_error_title), this.context.getString(R.string.resource_loading_error_content));
         } else {
-            resourceListImpl.onSuccess(calendarResources);
+            resourceListImpl.onResourceListSuccess(calendarResources);
         }
     }
 

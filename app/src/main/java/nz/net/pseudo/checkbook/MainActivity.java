@@ -20,10 +20,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -44,7 +46,12 @@ import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks, ResourceListIface, EventsListIface, SwipeRefreshLayout.OnRefreshListener, SearchView.OnQueryTextListener {
+public class MainActivity extends AppCompatActivity
+        implements EasyPermissions.PermissionCallbacks
+        , ResourceListIface, EventsListIface
+        , SwipeRefreshLayout.OnRefreshListener
+        , SearchView.OnQueryTextListener
+        , EventBookIface{
     private final String TAG = this.getClass().getSimpleName();
 
     private ActivityMainBinding mBinding;
@@ -108,9 +115,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mBinding.resourceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, ((CalendarResource)resourceListAdapter.getItem(position)).getResourceEmail());
                 mBinding.navDrawerLayout.closeDrawer(GravityCompat.START);
-                selectedResource = ((CalendarResource)resourceListAdapter.getItem(position));
+                selectedResource = ((CalendarResource)parent.getItemAtPosition(position));
                 mBinding.setResource(selectedResource);
                 onRefresh();
             }
@@ -122,6 +128,46 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mBinding.resourceEventsList.setAdapter(eventsListAdapter);
 
         mBinding.resourceEventsRefreshLayout.setOnRefreshListener(this);
+
+        mBinding.resourceEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(final AdapterView<?> parent, final View view, final int position, long id) {
+                final EditText edittext = (EditText)LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
+                final Event bookEvent = (Event)parent.getItemAtPosition(position);
+
+                new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(getString(R.string.event_booking_confirm_title))
+                    .setMessage(getString(R.string.event_booking_confirm_content))
+                    .setView(edittext)
+                    .setCancelable(true)
+                    .setPositiveButton(
+                            getString(R.string.okay_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Log.d(TAG, (edittext.getText().toString()));
+                                    mBinding.resourceEventsRefreshLayout.setRefreshing(true);
+                                    bookEvent.setSummary("".equals(edittext.getText().toString())?edittext.getHint().toString():edittext.getText().toString());
+                                    new EventBookAsyncTask(
+                                          MainActivity.this
+                                        , MainActivity.this.credential
+                                        , MainActivity.this
+                                        , MainActivity.this.selectedResource.getResourceEmail()
+                                        , bookEvent
+                                    ).execute();
+                                }
+                            }
+                    )
+                    .setNegativeButton(
+                            getString(R.string.cancel_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            }
+                    ).show();
+
+                }
+            });
 
         this.settings = getSharedPreferences(getString(R.string.global_shared_preferences_id),Context.MODE_PRIVATE);
 
@@ -352,33 +398,33 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     }
 
     @Override
-    public void onSuccess(CalendarResources calendarResources) {
+    public void onResourceListSuccess(CalendarResources calendarResources) {
         resourceListAdapter.setCalendarResources(calendarResources);
         mBinding.resourceSearchview.setQuery(settings.getString(getString(R.string.resource_filter_id),""),true);
     }
 
     @Override
-    public void onSuccess(Events events) {
+    public void onEventsListSuccess(Events events) {
         Log.d(TAG, "Got events");
         EventsParser eventsParser = new EventsParser(this);
-        eventsListAdapter.setEvents(eventsParser.parseEvents(events));
+        eventsListAdapter.setEvents(eventsParser.parseEvents(events, selectedResource));
         mBinding.resourceEventsRefreshLayout.setRefreshing(false);
     }
 
     @Override
-    public void onFail() {
+    public void onFail(String title, String content) {
         mBinding.resourceEventsRefreshLayout.setRefreshing(false);
         new AlertDialog.Builder(this)
-                .setTitle(R.string.events_loading_error_title)
-                .setMessage(R.string.events_loading_error_content)
+                .setTitle(title)
+                .setMessage(content)
                 .setCancelable(true)
                 .setNegativeButton(
-                    getString(R.string.okay_btn),
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                        }
-                    }).show();
+                        getString(R.string.okay_btn),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        }).show();
     }
 
     @Override
@@ -408,4 +454,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         settings.edit().putString(getString(R.string.resource_filter_id), filterText).commit();
         return true;
     }
+
+    @Override
+    public void onEventBookSuccess() {
+        Log.d(TAG, "Book Success");
+        onRefresh();
+    }
+
 }
