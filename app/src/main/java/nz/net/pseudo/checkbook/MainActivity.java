@@ -26,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -51,7 +52,8 @@ public class MainActivity extends AppCompatActivity
         , ResourceListIface, EventsListIface
         , SwipeRefreshLayout.OnRefreshListener
         , SearchView.OnQueryTextListener
-        , EventBookIface{
+        , EventBookIface
+        , EventUnbookIface{
     private final String TAG = this.getClass().getSimpleName();
 
     private ActivityMainBinding mBinding;
@@ -132,42 +134,81 @@ public class MainActivity extends AppCompatActivity
         mBinding.resourceEventsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(final AdapterView<?> parent, final View view, final int position, long id) {
-                final EditText edittext = (EditText)LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
-                final Event bookEvent = (Event)parent.getItemAtPosition(position);
+                final Event event = ((Event)parent.getItemAtPosition(position)).clone();
 
-                new AlertDialog.Builder(MainActivity.this)
-                    .setTitle(getString(R.string.event_booking_confirm_title))
-                    .setMessage(getString(R.string.event_booking_confirm_content))
-                    .setView(edittext)
-                    .setCancelable(true)
-                    .setPositiveButton(
-                            getString(R.string.okay_btn),
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    Log.d(TAG, (edittext.getText().toString()));
-                                    mBinding.resourceEventsRefreshLayout.setRefreshing(true);
-                                    bookEvent.setSummary("".equals(edittext.getText().toString())?edittext.getHint().toString():edittext.getText().toString());
-                                    new EventBookAsyncTask(
-                                          MainActivity.this
-                                        , MainActivity.this.credential
-                                        , MainActivity.this
-                                        , MainActivity.this.selectedResource.getResourceEmail()
-                                        , bookEvent
-                                    ).execute();
+                if(event.getCreator()==null) {
+
+                    final EditText edittext = (EditText) LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
+
+                    new AlertDialog.Builder(MainActivity.this)
+                        .setTitle(getString(R.string.event_book_confirm_title))
+                        .setMessage(getString(R.string.event_book_confirm_content))
+                        .setView(edittext)
+                        .setCancelable(true)
+                        .setPositiveButton(
+                                getString(R.string.okay_btn),
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        Log.d(TAG, (edittext.getText().toString()));
+                                        mBinding.resourceEventsRefreshLayout.setRefreshing(true);
+                                        event.setSummary("".equals(edittext.getText().toString()) ? edittext.getHint().toString() : edittext.getText().toString());
+                                        new EventBookAsyncTask(
+                                                MainActivity.this
+                                                , MainActivity.this.credential
+                                                , MainActivity.this
+                                                , MainActivity.this.selectedResource.getResourceEmail()
+                                                , event
+                                        ).execute();
+                                    }
                                 }
-                            }
-                    )
-                    .setNegativeButton(
-                            getString(R.string.cancel_btn),
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
+                        )
+                        .setNegativeButton(
+                                getString(R.string.cancel_btn),
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
                                 }
-                            }
                     ).show();
 
+                }else if(event.getCreator().getEmail().equals(credential.getSelectedAccountName())){
+                    Log.d(TAG, "User's event");
+
+                    if(event.getRecurringEventId()==null) {
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle(getString(R.string.event_unbook_confirm_title))
+                                .setMessage(getString(R.string.event_unbook_confirm_content))
+                                .setCancelable(true)
+                                .setPositiveButton(
+                                        getString(R.string.okay_btn),
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                mBinding.resourceEventsRefreshLayout.setRefreshing(true);
+                                                new EventUnbookAsyncTask(
+                                                        MainActivity.this
+                                                        , MainActivity.this.credential
+                                                        , MainActivity.this
+                                                        , event
+                                                ).execute();
+                                            }
+                                        }
+                                )
+                                .setNegativeButton(
+                                        getString(R.string.cancel_btn),
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        }
+                                ).show();
+                    }else{
+                        Toast.makeText(MainActivity.this, R.string.event_unbook_reoccurring_toast, Toast.LENGTH_SHORT).show();
+                    }
+
                 }
-            });
+
+            }
+        });
 
         this.settings = getSharedPreferences(getString(R.string.global_shared_preferences_id),Context.MODE_PRIVATE);
 
@@ -411,6 +452,7 @@ public class MainActivity extends AppCompatActivity
         mBinding.resourceEventsRefreshLayout.setRefreshing(false);
     }
 
+
     @Override
     public void onFail(String title, String content) {
         mBinding.resourceEventsRefreshLayout.setRefreshing(false);
@@ -458,6 +500,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onEventBookSuccess() {
         Log.d(TAG, "Book Success");
+        onRefresh();
+    }
+
+    @Override
+    public void onEventUnbookSuccess() {
+        Log.d(TAG, "Unbook Success");
         onRefresh();
     }
 

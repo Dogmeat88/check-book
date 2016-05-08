@@ -77,11 +77,11 @@ public class EventBookAsyncTask extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean isSuccess) {
         if (isSuccess == null) {
-            eventBookImpl.onFail(context.getString(R.string.event_booking_error_title), context.getString(R.string.event_booking_error_content));
+            eventBookImpl.onFail(context.getString(R.string.event_book_error_title), context.getString(R.string.event_book_error_content));
         }else if(isSuccess){
             eventBookImpl.onEventBookSuccess();
         }else{
-            eventBookImpl.onFail(context.getString(R.string.event_booking_conflict_title), context.getString(R.string.event_booking_conflict_content));
+            eventBookImpl.onFail(context.getString(R.string.event_book_conflict_title), context.getString(R.string.event_book_conflict_content));
         }
     }
 

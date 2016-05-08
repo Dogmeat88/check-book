@@ -21,7 +21,7 @@ public class EventsParser {
 
     private final int ONE_MIN_IN_MS = 60000;
     private final int FIFTEEN_MIN_IN_MS = 15*ONE_MIN_IN_MS;
-    private final int TWO_HOURS_IN_MS = 120*ONE_MIN_IN_MS;
+    private final int ONE_HOURS_IN_MS = 60*ONE_MIN_IN_MS;
 
 
     private Context context;
@@ -70,16 +70,10 @@ public class EventsParser {
             //Overshoot the last event by a couple of hours and populate with Book events
             Event lastEvent = rawEvents.getItems().get(rawEvents.getItems().size() - 1);
 
-            Event overshootEvent = new Event();
-            overshootEvent.setSummary(context.getString(R.string.book_event_title));
-
-            //Add the resource to event to allow us to book it if required
-            List<EventAttendee> attendeesList = new ArrayList<>();
-            attendeesList.add(new EventAttendee().setEmail(this.selectedResource.getResourceEmail()).setResource(true));
-            overshootEvent.setAttendees(attendeesList);
+            Event overshootEvent = createCoreQuickBookEvent();
 
             EventDateTime overshootEventStartDateTime = new EventDateTime();
-            overshootEventStartDateTime.setDateTime(AppUtils.roundFifteenMinutes(new DateTime(lastEvent.getEnd().getDateTime().getValue() + TWO_HOURS_IN_MS)));
+            overshootEventStartDateTime.setDateTime(AppUtils.roundFifteenMinutes(new DateTime(lastEvent.getEnd().getDateTime().getValue() + ONE_HOURS_IN_MS)));
             overshootEvent.setStart(overshootEventStartDateTime);
 
             EventDateTime overshootEventEndDateTime = new EventDateTime();
@@ -115,14 +109,9 @@ public class EventsParser {
 
         while(durationStartDate<durationEndDate){
 
-            Event bookEvent = new Event();
-            bookEvent.setSummary(context.getString(R.string.book_event_title));
-            bookEvent.setStart(new EventDateTime().setDateTime(new DateTime(durationStartDate)));
+            Event bookEvent = createCoreQuickBookEvent();
 
-            //Add the resource to event to allow us to book it if required
-            List<EventAttendee> attendeesList = new ArrayList<>();
-            attendeesList.add(new EventAttendee().setEmail(this.selectedResource.getResourceEmail()).setResource(true));
-            bookEvent.setAttendees(attendeesList);
+            bookEvent.setStart(new EventDateTime().setDateTime(new DateTime(durationStartDate)));
 
             //Set the end datetime 15min after the last event (including "Book" events) and round it up if it is not 1/4 hour
             DateTime bookEventEndDate = AppUtils.roundFifteenMinutes(new DateTime(durationStartDate+FIFTEEN_MIN_IN_MS));
@@ -139,5 +128,26 @@ public class EventsParser {
         }
 
         return bookEvents;
+    }
+
+    private Event createCoreQuickBookEvent(){
+
+        Event coreBookEvent = new Event();
+        coreBookEvent.setSummary(context.getString(R.string.book_event_title));
+
+        //Add the resource to event to allow us to book it if required
+        List<EventAttendee> attendeesList = new ArrayList<>();
+        attendeesList.add(new EventAttendee().setEmail(this.selectedResource.getResourceEmail()).setResource(true));
+        coreBookEvent.setAttendees(attendeesList);
+
+        //Remove reminders
+        coreBookEvent.setReminders(new Event.Reminders());
+        coreBookEvent.getReminders().setUseDefault(false);
+
+        //Change colour to green
+        coreBookEvent.setColorId("10");
+
+        return coreBookEvent;
+
     }
 }

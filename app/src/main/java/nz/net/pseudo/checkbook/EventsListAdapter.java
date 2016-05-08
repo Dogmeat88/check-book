@@ -81,17 +81,17 @@ public class EventsListAdapter extends BaseAdapter {
         TextView eventStartEndTime = (TextView) convertView.findViewById(R.id.event_start_end_time);
         DateTime startDateTime = eventItem.getStart().getDateTime();
         DateTime endDateTime = eventItem.getEnd().getDateTime();
-        eventStartEndTime.setText(systemTimeFormat.format(new Date(startDateTime.getValue()))+"-"+systemTimeFormat.format(new Date(endDateTime.getValue())));
+        eventStartEndTime.setText(systemTimeFormat.format(new Date(startDateTime.getValue()))+"\n"+systemTimeFormat.format(new Date(endDateTime.getValue())));
 
 
         LinearLayout eventContainerLinearLayout = (LinearLayout)convertView.findViewById(R.id.event_container);
 
         if(eventItem.getCreator()==null) {
             //Probably Quickbook event
-            eventContainerLinearLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.quickBookEvent));
+            eventContainerLinearLayout.setBackgroundResource(R.drawable.quickbook_event_item);
         }else if(eventItem.getCreator().getEmail().equals(credential.getSelectedAccountName())){
             //Users event
-            eventContainerLinearLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.usersEvent));
+            eventContainerLinearLayout.setBackgroundResource(R.drawable.user_event_item);
         }else{
             //Other Users event
             eventContainerLinearLayout.setBackgroundColor(ContextCompat.getColor(context, R.color.othersEvent));

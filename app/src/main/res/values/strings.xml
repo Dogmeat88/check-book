@@ -19,13 +19,19 @@
     <string name="events_loading_error_content">There was an error loading Events. Please try again.</string>
     <string name="resource_events_default_title">No Resource Selected</string>
 
-    <string name="event_booking_confirm_title">Quick Book</string>
-    <string name="event_booking_confirm_content">Enter event description(Optional)</string>
-    <string name="event_booking_confirm_edittext_hint">Ad hoc</string>
-    <string name="event_booking_error_title">Booking Event Error</string>
-    <string name="event_booking_error_content">There was an error booking this event. Please try again.</string>
-    <string name="event_booking_conflict_title">Booking Event Conflict</string>
-    <string name="event_booking_conflict_content">There was a conflict when booking this event. Please refresh the events list before trying again</string>
+    <string name="event_book_confirm_title">Quick Book</string>
+    <string name="event_book_confirm_content">Enter event description(Optional)</string>
+    <string name="event_book_confirm_edittext_hint">Ad hoc</string>
+    <string name="event_book_error_title">Booking Event Error</string>
+    <string name="event_book_error_content">There was an error booking this event. Please try again.</string>
+    <string name="event_book_conflict_title">Booking Event Conflict</string>
+    <string name="event_book_conflict_content">There was a conflict when booking this event. Please refresh the events list before trying again</string>
+
+    <string name="event_unbook_confirm_title">Unbook</string>
+    <string name="event_unbook_confirm_content">Unbook this event?</string>
+    <string name="event_unbook_error_title">Un-book Event Error</string>
+    <string name="event_unbook_error_content">There was an error unbooking this event. Please try again.</string>
+    <string name="event_unbook_reoccurring_toast">This event is reoccurring, please use Google Calendar App to unbook</string>
 
     <string name="book_event_title">Quick Book</string>
 
