@@ -1,5 +1,6 @@
 package nz.net.pseudo.checkbook;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -22,7 +23,7 @@ public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
     private EventUnbookIface eventUnbookImpl;
     private Event unbookEvent;
     private Context context;
-
+    private ProgressDialog progressDialog;
 
     public EventUnbookAsyncTask(
               Context context
@@ -34,10 +35,19 @@ public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
         this.unbookEvent = unbookEvent;
         this.context=context;
 
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setTitle(R.string.progress_dialogue_title);
+        progressDialog.setMessage(context.getString(R.string.event_book_progress_content));
+
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 
         mCalendar = new Calendar.Builder(transport, jsonFactory, credential).build();
+    }
+
+    @Override
+    protected void onPreExecute() {
+        progressDialog.show();
     }
 
     @Override
@@ -55,6 +65,7 @@ public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean isSuccess) {
+        progressDialog.hide();
         if (isSuccess == null || !isSuccess) {
             eventUnbookImpl.onFail(context.getString(R.string.event_unbook_error_title), context.getString(R.string.event_unbook_error_content));
         }else if(isSuccess){

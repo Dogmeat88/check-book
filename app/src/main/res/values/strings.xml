@@ -9,7 +9,7 @@
     <string name="progress_dialogue_title">Loading...</string>
 
     <string name="resources_not_loaded">No Resources Loaded</string>
-    <string name="resources_loading">Loading Resources</string>
+    <string name="resources_loading_progress_content">Loading Resources</string>
     <string name="resources_filter">Filter</string>
     <string name="resource_loading_error_title">Loading Resources Error</string>
     <string name="resource_loading_error_content">There was an error loading Resources. Please try again.</string>
@@ -26,12 +26,14 @@
     <string name="event_book_error_content">There was an error booking this event. Please try again.</string>
     <string name="event_book_conflict_title">Booking Event Conflict</string>
     <string name="event_book_conflict_content">There was a conflict when booking this event. Please refresh the events list before trying again</string>
+    <string name="event_book_progress_content">Booking Event</string>
 
     <string name="event_unbook_confirm_title">Unbook</string>
     <string name="event_unbook_confirm_content">Unbook this event?</string>
     <string name="event_unbook_error_title">Un-book Event Error</string>
     <string name="event_unbook_error_content">There was an error unbooking this event. Please try again.</string>
     <string name="event_unbook_reoccurring_toast">This event is reoccurring, please use Google Calendar App to unbook</string>
+    <string name="event_unbook_progress_content">Unbooking Event</string>
 
     <string name="book_event_title">Quick Book</string>
 

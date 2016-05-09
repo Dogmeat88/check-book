@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.admin.directory.model.CalendarResource;
-import com.google.api.services.calendar.model.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
@@ -20,8 +19,8 @@ import java.util.List;
 public class EventsParser {
 
     private final int ONE_MIN_IN_MS = 60000;
-    private final int FIFTEEN_MIN_IN_MS = 15*ONE_MIN_IN_MS;
-    private final int ONE_HOURS_IN_MS = 60*ONE_MIN_IN_MS;
+    private final int QUICK_BOOK_DURATION_MS = 15*ONE_MIN_IN_MS;
+    private final int QUICK_BOOK_BUFFER_MS = 60*ONE_MIN_IN_MS;
 
 
     private Context context;
@@ -37,11 +36,11 @@ public class EventsParser {
 
         List<Event> fillEvents = new ArrayList<>();
 
-        java.util.Calendar now = java.util.Calendar.getInstance();
-        //Subtract 15min before running calculations
-        now.add(java.util.Calendar.MINUTE, -15);
 
         //Past event is 15min ago till now
+        Date now = new Date();
+        now.setTime(now.getTime() - QUICK_BOOK_DURATION_MS);
+
         DateTime pastDateTime = AppUtils.roundFifteenMinutes(new DateTime(now.getTime()));
         EventDateTime pastEventDateTime= new EventDateTime();
         pastEventDateTime.setDateTime(pastDateTime);
@@ -73,18 +72,18 @@ public class EventsParser {
             Event overshootEvent = createCoreQuickBookEvent();
 
             EventDateTime overshootEventStartDateTime = new EventDateTime();
-            overshootEventStartDateTime.setDateTime(AppUtils.roundFifteenMinutes(new DateTime(lastEvent.getEnd().getDateTime().getValue() + ONE_HOURS_IN_MS)));
+            overshootEventStartDateTime.setDateTime(AppUtils.roundFifteenMinutes(new DateTime(lastEvent.getEnd().getDateTime().getValue() + QUICK_BOOK_BUFFER_MS)));
             overshootEvent.setStart(overshootEventStartDateTime);
 
             EventDateTime overshootEventEndDateTime = new EventDateTime();
-            overshootEventEndDateTime.setDateTime(new DateTime(overshootEventStartDateTime.getDateTime().getValue() + FIFTEEN_MIN_IN_MS));
+            overshootEventEndDateTime.setDateTime(new DateTime(overshootEventStartDateTime.getDateTime().getValue() + QUICK_BOOK_DURATION_MS));
             overshootEvent.setEnd(overshootEventEndDateTime);
 
             fillEvents.addAll(fillGaps(lastEvent, overshootEvent));
         } else {
 
             //If there are no events, then add a few book events after the current time
-            now.add(java.util.Calendar.HOUR, 1);
+            now.setTime(now.getTime() + QUICK_BOOK_BUFFER_MS);
             DateTime futureStartDateTime = AppUtils.roundFifteenMinutes(new DateTime(now.getTime()));
             EventDateTime futureStartEventDateTime = new EventDateTime();
             futureStartEventDateTime.setDateTime(futureStartDateTime);
@@ -114,7 +113,7 @@ public class EventsParser {
             bookEvent.setStart(new EventDateTime().setDateTime(new DateTime(durationStartDate)));
 
             //Set the end datetime 15min after the last event (including "Book" events) and round it up if it is not 1/4 hour
-            DateTime bookEventEndDate = AppUtils.roundFifteenMinutes(new DateTime(durationStartDate+FIFTEEN_MIN_IN_MS));
+            DateTime bookEventEndDate = AppUtils.roundFifteenMinutes(new DateTime(durationStartDate + QUICK_BOOK_DURATION_MS));
             if(bookEventEndDate.getValue()>durationEndDate){
                 //If the end of the new event is after the start of the next event, then make it the same to avoid overlap
                 bookEventEndDate = new DateTime(durationEndDate);

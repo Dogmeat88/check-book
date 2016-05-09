@@ -150,7 +150,6 @@ public class MainActivity extends AppCompatActivity
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
                                         Log.d(TAG, (edittext.getText().toString()));
-                                        mBinding.resourceEventsRefreshLayout.setRefreshing(true);
                                         event.setSummary("".equals(edittext.getText().toString()) ? edittext.getHint().toString() : edittext.getText().toString());
                                         new EventBookAsyncTask(
                                                 MainActivity.this
@@ -158,6 +157,7 @@ public class MainActivity extends AppCompatActivity
                                                 , MainActivity.this
                                                 , MainActivity.this.selectedResource.getResourceEmail()
                                                 , event
+                                                , position
                                         ).execute();
                                     }
                                 }
@@ -183,7 +183,6 @@ public class MainActivity extends AppCompatActivity
                                         getString(R.string.okay_btn),
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int id) {
-                                                mBinding.resourceEventsRefreshLayout.setRefreshing(true);
                                                 new EventUnbookAsyncTask(
                                                         MainActivity.this
                                                         , MainActivity.this.credential
@@ -498,9 +497,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onEventBookSuccess() {
+    public void onEventBookSuccess(Event bookEvent,int position) {
         Log.d(TAG, "Book Success");
-        onRefresh();
+        eventsListAdapter.getEvents().getItems().set(position, bookEvent);
+        eventsListAdapter.notifyDataSetChanged();
     }
 
     @Override

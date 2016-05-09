@@ -29,13 +29,18 @@ public class ResourceListAsyncTask extends AsyncTask<Void, Void, CalendarResourc
         this.context=context;
         progressDialog = new ProgressDialog(context);
         progressDialog.setTitle(R.string.progress_dialogue_title);
-        progressDialog.setMessage(context.getString(R.string.resources_loading));
+        progressDialog.setMessage(context.getString(R.string.resources_loading_progress_content));
 
 
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 
         mService = new Directory.Builder(transport, jsonFactory, credential).build();
+    }
+
+    @Override
+    protected void onPreExecute() {
+        progressDialog.show();
     }
 
     @Override
@@ -46,12 +51,6 @@ public class ResourceListAsyncTask extends AsyncTask<Void, Void, CalendarResourc
             Log.e(TAG, "Webservice exception: "+e.getMessage());
             return null;
         }
-    }
-
-
-    @Override
-    protected void onPreExecute() {
-        progressDialog.show();
     }
 
     @Override
