@@ -1,10 +1,16 @@
 package nz.net.pseudo.checkbook;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.text.format.DateFormat;
 
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.JsonParser;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
+import com.google.api.services.admin.directory.model.CalendarResources;
 
+import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -15,6 +21,7 @@ import java.util.TimeZone;
  * Created by i on 1/05/16.
  */
 public class AppUtils {
+    public static final String RESOURCES_KEY = "ResourcesKey";
 
     /**
      *
@@ -56,5 +63,26 @@ public class AppUtils {
         calendar.add(Calendar.MINUTE, mod < 8 ? -mod : (15-mod));
 
         return new DateTime(calendar.getTime());
+    }
+
+    public static void persistResources(SharedPreferences settings, CalendarResources resources){
+        SharedPreferences.Editor settingsEditor = settings.edit();
+        if(resources!=null) {
+            settingsEditor.putString(RESOURCES_KEY, resources.toString());
+        }else{
+            settingsEditor.remove(RESOURCES_KEY);
+        }
+        settingsEditor.commit();
+    }
+
+    public static CalendarResources retrieveResources(SharedPreferences settings) throws IOException {
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        String resourcesJson = settings.getString(RESOURCES_KEY, null);
+        CalendarResources resources = null;
+        if(resourcesJson!=null) {
+            JsonParser jsonParser = jsonFactory.createJsonParser(resourcesJson);
+            resources = jsonParser.parse(CalendarResources.class);
+        }
+        return resources;
     }
 }

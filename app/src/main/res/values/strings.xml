@@ -8,6 +8,9 @@
 
     <string name="progress_dialogue_title">Loading...</string>
 
+    <string name="connection_problem_title">Connection Problem</string>
+    <string name="connection_problem__content">There was a connection problem</string>
+
     <string name="resources_not_loaded">No Resources Loaded</string>
     <string name="resources_loading_progress_content">Loading Resources</string>
     <string name="resources_filter">Filter</string>
@@ -37,7 +40,15 @@
 
     <string name="book_event_title">Quick Book</string>
 
+    <string name="settings_title">Settings</string>
+    <string name="settings_refresh_resources_txt">The list of Resources (meeting rooms etc) are cached on the client as they seldom change. \nA fresh set can be obtained from the server with the button below.</string>
+    <string name="settings_refresh_resources_btn">Refresh Resources</string>
+    <string name="settings_event_book_title_txt">Set the default Quick Book event title</string>
 
     <string name="okay_btn">Okay</string>
+    <string name="close_btn">Close</string>
     <string name="cancel_btn">Cancel</string>
+    <string name="retry_btn">Retry</string>
+    <string name="quit_btn">Quit</string>
+
 </resources>

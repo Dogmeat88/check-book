@@ -18,12 +18,9 @@
             android:padding="10dp">
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                style="@style/text_heading"
                 android:text="@{resource==null?@string/resource_events_default_title:resource.resourceName}"
-                android:textSize="30dp">
-
-            </TextView>
+                />
 
             <android.support.v4.widget.SwipeRefreshLayout
                 android:id="@+id/resource_events_refresh_layout"

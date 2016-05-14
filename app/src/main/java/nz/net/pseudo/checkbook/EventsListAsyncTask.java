@@ -40,7 +40,7 @@ public class EventsListAsyncTask extends AsyncTask<Void, Void, Events> {
     protected Events doInBackground(Void... params) {
         try {
             java.util.Calendar startDateLimit = java.util.Calendar.getInstance();
-            startDateLimit.add(java.util.Calendar.HOUR, -1);
+            startDateLimit.add(java.util.Calendar.MINUTE, -15);
 
             java.util.Calendar endDateLimit = java.util.Calendar.getInstance();
             endDateLimit.add(java.util.Calendar.HOUR, +12);

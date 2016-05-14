@@ -12,4 +12,6 @@
     <color name="usersEvent">#D7FF9D</color>
     <color name="usersEventPressed">#80D7FF9D</color>
 
+    <color name="horizontalLine">#FF0000FF</color>
+
 </resources>

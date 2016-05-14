@@ -7,6 +7,7 @@ import com.google.api.services.admin.directory.model.CalendarResources;
  * Interface between main activity and asynctask
  */
 public interface ResourceListIface {
-    void onResourceListSuccess(CalendarResources calendarResources);
+    void resourcesAsyncTask();
+    void onResourceListSuccess(CalendarResources resources);
     void onFail(String title, String content);
 }

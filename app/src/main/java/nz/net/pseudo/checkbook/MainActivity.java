@@ -39,6 +39,7 @@ import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,8 +63,6 @@ public class MainActivity extends AppCompatActivity
     private EventsListAdapter eventsListAdapter;
     private ActionBarDrawerToggle drawerToggle;
     private CalendarResource selectedResource;
-    private SharedPreferences settings;
-
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
@@ -71,6 +70,8 @@ public class MainActivity extends AppCompatActivity
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
 
     private static final String PREF_ACCOUNT_NAME_KEY = "accountNameKey";
+    private static final String FRAG_SETTINGS_KEY = "fragSettingsKey";
+    private static final String QUICKBOOK_TITLE_KEY = "quickBoolTitleKey";
 
     private static final String[] SCOPES = {
           DirectoryScopes.ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY
@@ -139,6 +140,7 @@ public class MainActivity extends AppCompatActivity
                 if(event.getCreator()==null) {
 
                     final EditText edittext = (EditText) LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
+                    edittext.setHint(getPreferences(Context.MODE_PRIVATE).getString(QUICKBOOK_TITLE_KEY, getString(R.string.event_book_confirm_edittext_hint)));
 
                     new AlertDialog.Builder(MainActivity.this)
                         .setTitle(getString(R.string.event_book_confirm_title))
@@ -209,8 +211,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        this.settings = getSharedPreferences(getString(R.string.global_shared_preferences_id),Context.MODE_PRIVATE);
-
         init();
     }
 
@@ -227,8 +227,9 @@ public class MainActivity extends AppCompatActivity
         // true, then it has handled the app icon touch event
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
+        } else if(item.getItemId()==R.id.action_settings){
+            new SettingsDialogueFragment().show(getSupportFragmentManager(), FRAG_SETTINGS_KEY);
         }
-        // Handle your other action bar items...
 
         return super.onOptionsItemSelected(item);
     }
@@ -251,14 +252,48 @@ public class MainActivity extends AppCompatActivity
      * appropriate.
      */
     private void init() {
-        if (! isGooglePlayServicesAvailable()) {
+        if (!isGooglePlayServicesAvailable()) {
             acquireGooglePlayServices();
         } else if (credential.getSelectedAccountName() == null) {
             chooseAccount();
-        } else if (! isDeviceOnline()) {
+        } else if (!isDeviceOnline()) {
             Log.e(TAG,"No network connection available.");
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.connection_problem_title))
+                    .setMessage(getString(R.string.connection_problem__content))
+                    .setCancelable(true)
+                    .setPositiveButton(
+                            getString(R.string.retry_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    init();
+                                }
+                            })
+                    .setNegativeButton(
+                            getString(R.string.quit_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    finish();
+                                }
+                            }).show();
         } else {
+            resourcesAsyncTask();
+        }
+    }
+
+    @Override
+    public void resourcesAsyncTask(){
+        //Check resource cache first
+        CalendarResources resources = null;
+        try {
+            resources = AppUtils.retrieveResources(getPreferences(Context.MODE_PRIVATE));
+        } catch (IOException e) {
+            Log.w(TAG, "Failed to parse resource json... fetching again");
+        }
+        if(resources==null) {
             new ResourceListAsyncTask(this, credential, this).execute();
+        }else{
+            loadResources(resources);
         }
     }
 
@@ -274,17 +309,14 @@ public class MainActivity extends AppCompatActivity
      */
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount() {
-        if (EasyPermissions.hasPermissions(
-                this, Manifest.permission.GET_ACCOUNTS)) {
+        if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
             String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME_KEY, null);
             if (accountName != null) {
                 credential.setSelectedAccountName(accountName);
                 init();
             } else {
-                // Start a dialog from which the user can choose an accountx
-                startActivityForResult(
-                        credential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+                // Start a dialog from which the user can choose an account
+                startActivityForResult(credential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
             }
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
@@ -307,8 +339,7 @@ public class MainActivity extends AppCompatActivity
      *     activity result.
      */
     @Override
-    protected void onActivityResult(
-            int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch(requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
@@ -321,14 +352,10 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
             case REQUEST_ACCOUNT_PICKER:
-                if (resultCode == RESULT_OK && data != null &&
-                        data.getExtras() != null) {
-                    String accountName =
-                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                if (resultCode == RESULT_OK && data != null && data.getExtras() != null) {
+                    String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                     if (accountName != null) {
-                        SharedPreferences settings =
-                                getPreferences(Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = settings.edit();
+                        SharedPreferences.Editor editor = getPreferences(Context.MODE_PRIVATE).edit();
                         editor.putString(PREF_ACCOUNT_NAME_KEY, accountName);
                         editor.apply();
                         credential.setSelectedAccountName(accountName);
@@ -357,8 +384,7 @@ public class MainActivity extends AppCompatActivity
                                            @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(
-                requestCode, permissions, grantResults, this);
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
 
     /**
@@ -390,8 +416,7 @@ public class MainActivity extends AppCompatActivity
      * @return true if the device has a network connection, false otherwise.
      */
     private boolean isDeviceOnline() {
-        ConnectivityManager connMgr =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         return (networkInfo != null && networkInfo.isConnected());
     }
@@ -402,8 +427,7 @@ public class MainActivity extends AppCompatActivity
      *     date on this device; false otherwise.
      */
     private boolean isGooglePlayServicesAvailable() {
-        GoogleApiAvailability apiAvailability =
-                GoogleApiAvailability.getInstance();
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         final int connectionStatusCode = apiAvailability.isGooglePlayServicesAvailable(this);
         return connectionStatusCode == ConnectionResult.SUCCESS;
     }
@@ -438,9 +462,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onResourceListSuccess(CalendarResources calendarResources) {
-        resourceListAdapter.setCalendarResources(calendarResources);
-        mBinding.resourceSearchview.setQuery(settings.getString(getString(R.string.resource_filter_id),""),true);
+    public void onResourceListSuccess(CalendarResources resources) {
+        AppUtils.persistResources(getPreferences(Context.MODE_PRIVATE), resources);
+        loadResources(resources);
+    }
+
+    private void loadResources(CalendarResources resources){
+        resourceListAdapter.setCalendarResources(resources);
+        mBinding.resourceSearchview.setQuery(getPreferences(Context.MODE_PRIVATE).getString(getString(R.string.resource_filter_id),""),true);
     }
 
     @Override
@@ -478,6 +507,7 @@ public class MainActivity extends AppCompatActivity
                     , MainActivity.this
                     , selectedResource.getResourceEmail()
             ).execute();
+
         }else{
            mBinding.resourceEventsRefreshLayout.setRefreshing(false);
         }
@@ -492,7 +522,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onQueryTextChange(String filterText) {
         resourceListAdapter.getFilter().filter(filterText);
-        settings.edit().putString(getString(R.string.resource_filter_id), filterText).commit();
+        getPreferences(Context.MODE_PRIVATE).edit().putString(getString(R.string.resource_filter_id), filterText).commit();
         return true;
     }
 
