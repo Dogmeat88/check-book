@@ -5,6 +5,8 @@ import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +36,27 @@ public class SettingsDialogueFragment extends DialogFragment{
         View view = inflater.inflate(R.layout.settings_dialogue_fragment, container, false);
         mBinding = SettingsDialogueFragmentBinding.bind(view);
 
+        mBinding.editEventTitle.setHint(getActivity().getPreferences(Context.MODE_PRIVATE).getString(MainActivity.QUICKBOOK_TITLE_KEY,""));
+        mBinding.editEventTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //do nothing
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if("".equals(s.toString())){
+                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().remove(MainActivity.QUICKBOOK_TITLE_KEY).commit();
+                }else {
+                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(MainActivity.QUICKBOOK_TITLE_KEY, s.toString()).commit();
+                }
+            }
+        });
         mBinding.settingsDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

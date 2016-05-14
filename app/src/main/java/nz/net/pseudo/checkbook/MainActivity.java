@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final String PREF_ACCOUNT_NAME_KEY = "accountNameKey";
     private static final String FRAG_SETTINGS_KEY = "fragSettingsKey";
-    private static final String QUICKBOOK_TITLE_KEY = "quickBoolTitleKey";
+    public static final String QUICKBOOK_TITLE_KEY = "quickBoolTitleKey";
 
     private static final String[] SCOPES = {
           DirectoryScopes.ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY
