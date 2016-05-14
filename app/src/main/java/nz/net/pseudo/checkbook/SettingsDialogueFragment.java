@@ -36,7 +36,7 @@ public class SettingsDialogueFragment extends DialogFragment{
         View view = inflater.inflate(R.layout.settings_dialogue_fragment, container, false);
         mBinding = SettingsDialogueFragmentBinding.bind(view);
 
-        mBinding.editEventTitle.setHint(getActivity().getPreferences(Context.MODE_PRIVATE).getString(MainActivity.QUICKBOOK_TITLE_KEY,""));
+        mBinding.editEventTitle.setHint(getActivity().getPreferences(Context.MODE_PRIVATE).getString(MainActivity.QUICKBOOK_TITLE_KEY, getString(R.string.event_book_confirm_edittext_hint)));
         mBinding.editEventTitle.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
