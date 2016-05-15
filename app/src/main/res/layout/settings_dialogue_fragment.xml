@@ -10,7 +10,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:padding="10dp">
+            android:padding="20dp">
 
             <TextView
                 style="@style/text_heading"
@@ -22,13 +22,38 @@
 
             <TextView
                 style="@style/text_content"
+                android:text="@string/settings_event_duration_txt"
+                android:layout_marginTop="10dp"
+                />
+
+            <RadioGroup
+                android:id="@+id/settings_event_duration_container"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <RadioButton
+                    android:id="@+id/settings_event_duration_15min"
+                    style="@style/button"
+                    android:text="@string/settings_event_duration_15min"
+                    />
+                <RadioButton
+                    android:id="@+id/settings_event_duration_30min"
+                    style="@style/button"
+                    android:text="@string/settings_event_duration_30min"
+                    />
+            </RadioGroup>
+
+            <View style="@style/horizontal_line" />
+
+            <TextView
+                style="@style/text_content"
                 android:text="@string/settings_event_book_title_txt"
                 android:layout_marginTop="10dp"
                 />
             <EditText
                 android:id="@+id/edit_event_title"
                 style="@style/edit_event_title"
-                android:hint="@string/event_book_confirm_edittext_hint"/>
+                />
 
             <View style="@style/horizontal_line" />
 
@@ -47,9 +72,8 @@
             <View style="@style/horizontal_line" />
 
             <Button
+                style="@style/button"
                 android:id="@+id/settings_done_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="@string/close_btn"
                 android:layout_marginTop="10dp"/>
 

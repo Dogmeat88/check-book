@@ -71,7 +71,9 @@ public class MainActivity extends AppCompatActivity
 
     private static final String PREF_ACCOUNT_NAME_KEY = "accountNameKey";
     private static final String FRAG_SETTINGS_KEY = "fragSettingsKey";
-    public static final String QUICKBOOK_TITLE_KEY = "quickBoolTitleKey";
+    private static final String FRAG_ABOUt_KEY = "fragAboutKey";
+    public static final String QUICKBOOK_TITLE_KEY = "quickBookTitleKey";
+    public static final String QUICKBOOK_DURATION_KEY = "quickBookDurationKey";
 
     private static final String[] SCOPES = {
           DirectoryScopes.ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY
@@ -217,7 +219,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.settings, menu);
+        getMenuInflater().inflate(R.menu.options, menu);
         return true;
     }
 
@@ -229,6 +231,8 @@ public class MainActivity extends AppCompatActivity
             return true;
         } else if(item.getItemId()==R.id.action_settings){
             new SettingsDialogueFragment().show(getSupportFragmentManager(), FRAG_SETTINGS_KEY);
+        } else if(item.getItemId()==R.id.action_about){
+            new AboutDialogueFragment().show(getSupportFragmentManager(), FRAG_ABOUt_KEY);
         }
 
         return super.onOptionsItemSelected(item);
@@ -473,6 +477,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public void eventsAsyncTask() {
+        if(selectedResource!=null) {
+            mBinding.resourceEventsRefreshLayout.setRefreshing(true);
+            new EventsListAsyncTask(
+                    MainActivity.this
+                    , credential
+                    , MainActivity.this
+                    , selectedResource.getResourceEmail()
+            ).execute();
+        }else{
+            mBinding.resourceEventsRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    @Override
     public void onEventsListSuccess(Events events) {
         Log.d(TAG, "Got events");
         EventsParser eventsParser = new EventsParser(this);
@@ -499,18 +518,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onRefresh() {
-        if(selectedResource!=null) {
-            mBinding.resourceEventsRefreshLayout.setRefreshing(true);
-            new EventsListAsyncTask(
-                    MainActivity.this
-                    , credential
-                    , MainActivity.this
-                    , selectedResource.getResourceEmail()
-            ).execute();
-
-        }else{
-           mBinding.resourceEventsRefreshLayout.setRefreshing(false);
-        }
+        eventsAsyncTask();
     }
 
     @Override

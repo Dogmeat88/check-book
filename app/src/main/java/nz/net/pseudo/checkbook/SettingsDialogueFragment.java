@@ -10,6 +10,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RadioGroup;
 
 import nz.net.pseudo.checkbook.databinding.SettingsDialogueFragmentBinding;
 
@@ -19,15 +20,17 @@ import nz.net.pseudo.checkbook.databinding.SettingsDialogueFragmentBinding;
 public class SettingsDialogueFragment extends DialogFragment{
     SettingsDialogueFragmentBinding mBinding;
     ResourceListIface resourceListImpl;
+    EventsListIface eventsListImpl;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
             resourceListImpl = (ResourceListIface) context;
+            eventsListImpl = (EventsListIface) context;
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
-                    + " must implement ResourceListIface");
+                    + " must implement ResourceListIface and EventsListIface");
         }
     }
 
@@ -35,6 +38,27 @@ public class SettingsDialogueFragment extends DialogFragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.settings_dialogue_fragment, container, false);
         mBinding = SettingsDialogueFragmentBinding.bind(view);
+
+
+        int quickBookDuration = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(MainActivity.QUICKBOOK_DURATION_KEY, getResources().getInteger(R.integer.settings_event_duration_15min));
+
+        if(quickBookDuration==getResources().getInteger(R.integer.settings_event_duration_15min)){
+            mBinding.settingsEventDuration15min.setChecked(true);
+        }else{
+            mBinding.settingsEventDuration30min.setChecked(true);
+        }
+        mBinding.settingsEventDurationContainer.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if(checkedId==R.id.settings_event_duration_15min){
+                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(MainActivity.QUICKBOOK_DURATION_KEY, getResources().getInteger(R.integer.settings_event_duration_15min)).commit();
+                    eventsListImpl.eventsAsyncTask();
+                }else{
+                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(MainActivity.QUICKBOOK_DURATION_KEY, getResources().getInteger(R.integer.settings_event_duration_30min)).commit();
+                    eventsListImpl.eventsAsyncTask();
+                }
+            }
+        });
 
         mBinding.editEventTitle.setHint(getActivity().getPreferences(Context.MODE_PRIVATE).getString(MainActivity.QUICKBOOK_TITLE_KEY, getString(R.string.event_book_confirm_edittext_hint)));
         mBinding.editEventTitle.addTextChangedListener(new TextWatcher() {
@@ -57,12 +81,6 @@ public class SettingsDialogueFragment extends DialogFragment{
                 }
             }
         });
-        mBinding.settingsDoneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
 
         mBinding.settingsRefreshResourcesButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,16 +90,14 @@ public class SettingsDialogueFragment extends DialogFragment{
             }
         });
 
+        mBinding.settingsDoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
+
         return view;
     }
-//
-//    @Override
-//    public void onCreate(@Nullable Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//            super.onCreate(savedInstanceState);
-//            setStyle(DialogFragment.STYLE_NO_TITLE, R.style.DialogCustom);
-//            setCancelable(true);
-//            setRetainInstance(true);
-//       // mBinding = DataBindingUtil.setContentView(getActivity(), R.layout.settings_dialogue_fragment);
-//    }
+
 }

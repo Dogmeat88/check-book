@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="resource_filter_id">resourceFilterId</string>
+    <!--<string name="global_shared_preferences_id">globalSharedPreferences</string>-->
 
-    <string name="global_shared_preferences_id">globalSharedPreferences</string>
+    <integer name="settings_event_duration_15min">900000</integer>
+    <integer name="settings_event_duration_30min">1800000</integer>
+    
 </resources>

@@ -1,5 +1,6 @@
 package nz.net.pseudo.checkbook;
 
+import android.app.Activity;
 import android.content.Context;
 
 import com.google.api.client.util.DateTime;
@@ -19,7 +20,7 @@ import java.util.List;
 public class EventsParser {
 
     private final int ONE_MIN_IN_MS = 60000;
-    private final int QUICK_BOOK_DURATION_MS = 15*ONE_MIN_IN_MS;
+    private int quickBookDurationMs;
     private final int QUICK_BOOK_BUFFER_MS = 60*ONE_MIN_IN_MS;
 
 
@@ -32,6 +33,7 @@ public class EventsParser {
 
     public Events parseEvents(Events rawEvents, CalendarResource selectedResource){
 
+        this.quickBookDurationMs = ((Activity)context).getPreferences(Context.MODE_PRIVATE).getInt(MainActivity.QUICKBOOK_DURATION_KEY, context.getResources().getInteger(R.integer.settings_event_duration_15min));
         this.selectedResource=selectedResource;
 
         List<Event> fillEvents = new ArrayList<>();
@@ -39,7 +41,7 @@ public class EventsParser {
 
         //Past event is 15min ago till now
         Date now = new Date();
-        now.setTime(now.getTime() - QUICK_BOOK_DURATION_MS);
+        now.setTime(now.getTime() - quickBookDurationMs);
 
         DateTime pastDateTime = AppUtils.roundFifteenMinutes(new DateTime(now.getTime()));
         EventDateTime pastEventDateTime= new EventDateTime();
@@ -76,7 +78,7 @@ public class EventsParser {
             overshootEvent.setStart(overshootEventStartDateTime);
 
             EventDateTime overshootEventEndDateTime = new EventDateTime();
-            overshootEventEndDateTime.setDateTime(new DateTime(overshootEventStartDateTime.getDateTime().getValue() + QUICK_BOOK_DURATION_MS));
+            overshootEventEndDateTime.setDateTime(new DateTime(overshootEventStartDateTime.getDateTime().getValue() + quickBookDurationMs));
             overshootEvent.setEnd(overshootEventEndDateTime);
 
             fillEvents.addAll(fillGaps(lastEvent, overshootEvent));
@@ -113,7 +115,7 @@ public class EventsParser {
             bookEvent.setStart(new EventDateTime().setDateTime(new DateTime(durationStartDate)));
 
             //Set the end datetime 15min after the last event (including "Book" events) and round it up if it is not 1/4 hour
-            DateTime bookEventEndDate = AppUtils.roundFifteenMinutes(new DateTime(durationStartDate + QUICK_BOOK_DURATION_MS));
+            DateTime bookEventEndDate = AppUtils.roundFifteenMinutes(new DateTime(durationStartDate + quickBookDurationMs));
             if(bookEventEndDate.getValue()>durationEndDate){
                 //If the end of the new event is after the start of the next event, then make it the same to avoid overlap
                 bookEventEndDate = new DateTime(durationEndDate);

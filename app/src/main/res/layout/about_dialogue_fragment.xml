@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data/>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:padding="20dp">
+
+            <TextView
+                style="@style/text_heading"
+                android:text="@string/about_title"
+                android:gravity="center_horizontal"
+                />
+
+            <View style="@style/horizontal_line" />
+
+            <TextView
+                style="@style/text_content"
+                android:text="@string/about_content"
+                android:layout_marginTop="10dp"
+                />
+
+
+            <Button
+                style="@style/button"
+                android:id="@+id/about_done_button"
+                android:text="@string/close_btn"
+                android:layout_marginTop="10dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</layout>

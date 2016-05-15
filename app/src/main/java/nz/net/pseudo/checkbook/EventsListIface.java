@@ -7,6 +7,7 @@ import com.google.api.services.calendar.model.Events;
  * Interface between main activity and asynctask
  */
 public interface EventsListIface {
+    void eventsAsyncTask();
     void onEventsListSuccess(Events events);
     void onFail(String title, String content);
 }
