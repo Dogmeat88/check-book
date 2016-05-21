@@ -11,6 +11,8 @@ import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -39,9 +41,19 @@ import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
+import org.altbeacon.beacon.RangeNotifier;
+import org.altbeacon.beacon.Region;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
@@ -54,7 +66,11 @@ public class MainActivity extends AppCompatActivity
         , SwipeRefreshLayout.OnRefreshListener
         , SearchView.OnQueryTextListener
         , EventBookIface
-        , EventUnbookIface{
+        , EventUnbookIface
+        , BeaconConsumer
+        , RangeNotifier
+        , BeaconIface
+        {
     private final String TAG = this.getClass().getSimpleName();
 
     private ActivityMainBinding mBinding;
@@ -64,16 +80,21 @@ public class MainActivity extends AppCompatActivity
     private ActionBarDrawerToggle drawerToggle;
     private CalendarResource selectedResource;
 
+    private BeaconManager beaconManager;
+    private Beacon currentBeacon;
+    private boolean beaconOverride;
+    private CountDownTimer beaconOverrideCountdownTimer;
+
+
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    static final int REQUEST_PERMISSION_GET_ACCOUNTS_FINE_LOCATION = 1003;
 
     private static final String PREF_ACCOUNT_NAME_KEY = "accountNameKey";
     private static final String FRAG_SETTINGS_KEY = "fragSettingsKey";
     private static final String FRAG_ABOUt_KEY = "fragAboutKey";
-    public static final String QUICKBOOK_TITLE_KEY = "quickBookTitleKey";
-    public static final String QUICKBOOK_DURATION_KEY = "quickBookDurationKey";
+
 
     private static final String[] SCOPES = {
           DirectoryScopes.ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY
@@ -88,6 +109,8 @@ public class MainActivity extends AppCompatActivity
 
         credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
 
+        beaconOverride = false;
+
         drawerToggle = new ActionBarDrawerToggle(
                 this,                  /* host Activity */
                 mBinding.navDrawerLayout,         /* DrawerLayout object */
@@ -101,16 +124,6 @@ public class MainActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
-
         CalendarResources calendarResources = new CalendarResources();
         calendarResources.setItems(new ArrayList<CalendarResource>());
         resourceListAdapter = new ResourceListAdapter(calendarResources);
@@ -121,9 +134,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mBinding.navDrawerLayout.closeDrawer(GravityCompat.START);
-                selectedResource = ((CalendarResource)parent.getItemAtPosition(position));
-                mBinding.setResource(selectedResource);
-                onRefresh();
+                suspendBeacon();
+
+                selectResource(((CalendarResource)parent.getItemAtPosition(position)));
             }
         });
 
@@ -142,7 +155,7 @@ public class MainActivity extends AppCompatActivity
                 if(event.getCreator()==null) {
 
                     final EditText edittext = (EditText) LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
-                    edittext.setHint(getPreferences(Context.MODE_PRIVATE).getString(QUICKBOOK_TITLE_KEY, getString(R.string.event_book_confirm_edittext_hint)));
+                    edittext.setHint(getPreferences(Context.MODE_PRIVATE).getString(AppUtils.QUICKBOOK_TITLE_KEY, getString(R.string.event_book_confirm_edittext_hint)));
 
                     new AlertDialog.Builder(MainActivity.this)
                         .setTitle(getString(R.string.event_book_confirm_title))
@@ -212,8 +225,13 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-
         init();
+    }
+
+    private void selectResource(CalendarResource resource){
+        selectedResource = resource;
+        mBinding.setResource(selectedResource);
+        onRefresh();
     }
 
     @Override
@@ -285,6 +303,35 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void initBeacons(){
+
+        beaconManager = BeaconManager.getInstanceForApplication(this);
+
+        beaconManager.setForegroundScanPeriod(AppUtils.BEACON_POLL_DURATION_MS);
+        // Detect the main identifier (UID) frame:
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=00,p:3-3:-41,i:4-13,i:14-19"));
+        // Detect the telemetry (TLM) frame:
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("x,s:0-1=feaa,m:2-2=20,d:3-3,d:4-5,d:6-7,d:8-11,d:12-15"));
+        // Detect the URL frame:
+        //beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-20v"));
+
+        beaconManager.bind(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        setBeaconEnabled(false);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(beaconManager!=null) {
+            beaconManager.bind(this);
+        }
+    }
+
     @Override
     public void resourcesAsyncTask(){
         //Check resource cache first
@@ -311,9 +358,12 @@ public class MainActivity extends AppCompatActivity
      * function will be rerun automatically whenever the GET_ACCOUNTS permission
      * is granted.
      */
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS_FINE_LOCATION)
     private void chooseAccount() {
-        if (EasyPermissions.hasPermissions(this, Manifest.permission.GET_ACCOUNTS)) {
+
+        String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.ACCESS_FINE_LOCATION};
+
+        if (EasyPermissions.hasPermissions(this, perms)) {
             String accountName = getPreferences(Context.MODE_PRIVATE).getString(PREF_ACCOUNT_NAME_KEY, null);
             if (accountName != null) {
                 credential.setSelectedAccountName(accountName);
@@ -326,9 +376,9 @@ public class MainActivity extends AppCompatActivity
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this,
-                    "This app needs to access your Google account (via Contacts).",
-                    REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
+                    "This app needs to access your Google account (via Contacts) and you Location",
+                    REQUEST_PERMISSION_GET_ACCOUNTS_FINE_LOCATION,
+                    perms);
         }
     }
 
@@ -469,11 +519,17 @@ public class MainActivity extends AppCompatActivity
     public void onResourceListSuccess(CalendarResources resources) {
         AppUtils.persistResources(getPreferences(Context.MODE_PRIVATE), resources);
         loadResources(resources);
+
     }
 
     private void loadResources(CalendarResources resources){
         resourceListAdapter.setCalendarResources(resources);
         mBinding.resourceSearchview.setQuery(getPreferences(Context.MODE_PRIVATE).getString(getString(R.string.resource_filter_id),""),true);
+
+        //Now that we have a resource list we can init the beacon functionality
+        if(getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false)) {
+            initBeacons();
+        }
     }
 
     @Override
@@ -547,4 +603,96 @@ public class MainActivity extends AppCompatActivity
         onRefresh();
     }
 
+    @Override
+    public void onBeaconServiceConnect() {
+
+        Region region = new Region("all-beacons-region", null, null, null);
+
+        try {
+            beaconManager.startRangingBeaconsInRegion(region);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+       beaconManager.setRangeNotifier(this);
+
+    }
+
+    @Override
+    public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+
+        List<Beacon> beaconList = new ArrayList(beacons);
+        //sort the beacons by distance from closest to farthest
+        Collections.sort(beaconList ,new Comparator<Beacon>(){
+            @Override
+            public int compare(final Beacon lhs,Beacon rhs) {
+                return Double.compare(lhs.getDistance(), rhs.getDistance());
+            }
+        });
+
+
+        for (Beacon beacon: beaconList) {
+            if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x00) {
+                if(AppUtils.EUIDResourceMap.containsKey(beacon.getId2().toString())) {
+                    this.currentBeacon = beacon;
+                    break;
+                }
+            }
+        }
+
+        updateBeaconResource();
+
+    }
+
+    //Update the selected resource and associated events based on the detected beacon
+    private void updateBeaconResource(){
+        if(currentBeacon!=null && !beaconOverride) {
+            String beaconEmail = AppUtils.EUIDResourceMap.get(currentBeacon.getId2().toString());
+            if (selectedResource == null || !beaconEmail.equals(selectedResource.getResourceEmail())) {
+                final CalendarResource beaconResource = AppUtils.findResourceByEmail(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources(), beaconEmail);
+                if (beaconResource != null) {
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            selectResource(beaconResource);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    @Override
+    public void setBeaconEnabled(boolean enable) {
+        if(enable){
+            initBeacons();
+        }else{
+            if(beaconManager!=null) {
+                beaconManager.unbind(this);
+            }
+        }
+    }
+
+    private void suspendBeacon() {
+        if(getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false)) {
+            beaconOverride = true;
+            mBinding.beaconOverrideText.setVisibility(View.VISIBLE);
+
+            if(beaconOverrideCountdownTimer!=null){
+                beaconOverrideCountdownTimer.cancel();
+            }
+
+            beaconOverrideCountdownTimer = new CountDownTimer(getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY
+                    , getResources().getInteger(R.integer.settings_beacon_override_duration_default)), 1000) {
+
+                public void onTick(long millisUntilFinished) {
+                    mBinding.beaconOverrideText.setText(getString(R.string.beacon_override_prefix) + " " + String.valueOf(millisUntilFinished / 1000));
+                }
+
+                public void onFinish() {
+                    Log.v(TAG, "CountDownTimer.onFinish()");
+                    beaconOverride = false;
+                    mBinding.beaconOverrideText.setVisibility(View.INVISIBLE);
+                }
+            }.start();
+        }
+    }
 }

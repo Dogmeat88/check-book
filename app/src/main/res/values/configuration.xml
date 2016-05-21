@@ -5,5 +5,7 @@
 
     <integer name="settings_event_duration_15min">900000</integer>
     <integer name="settings_event_duration_30min">1800000</integer>
+
+    <integer name="settings_beacon_override_duration_default">25000</integer>
     
 </resources>

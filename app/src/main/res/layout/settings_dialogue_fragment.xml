@@ -52,7 +52,35 @@
                 />
             <EditText
                 android:id="@+id/edit_event_title"
-                style="@style/edit_event_title"
+                style="@style/edit_standard"
+                />
+
+            <View style="@style/horizontal_line" />
+
+            <TextView
+                style="@style/text_content"
+                android:text="@string/settings_beacon_toggle"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                />
+
+            <ToggleButton
+                android:id="@+id/settings_beacon_toggle_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <TextView
+                style="@style/text_content"
+                android:text="@string/settings_beacon_override_duration"
+                android:layout_marginTop="10dp"
+                />
+            <EditText
+                android:id="@+id/edit_beacon_override"
+                style="@style/edit_standard"
+                android:inputType="number"
+                android:maxLength="3"
                 />
 
             <View style="@style/horizontal_line" />

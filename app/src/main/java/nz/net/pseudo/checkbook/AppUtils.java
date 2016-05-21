@@ -8,6 +8,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
+import com.google.api.services.admin.directory.model.CalendarResource;
 import com.google.api.services.admin.directory.model.CalendarResources;
 
 import java.io.IOException;
@@ -15,6 +16,8 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 /**
@@ -22,6 +25,18 @@ import java.util.TimeZone;
  */
 public class AppUtils {
     public static final String RESOURCES_KEY = "ResourcesKey";
+    public static final String QUICKBOOK_TITLE_KEY = "quickBookTitleKey";
+    public static final String QUICKBOOK_DURATION_KEY = "quickBookDurationKey";
+    public static final String BEACON_STATE_KEY = "beaconStateKey";
+    public static final String BEACON_OVERRIDE_DURATION_KEY = "beaconOverrideDurationKey";
+    public static final long BEACON_POLL_DURATION_MS = 5000;
+
+    //Map
+    public static final Map<String, String> EUIDResourceMap;
+    static {
+        EUIDResourceMap = new HashMap<>();
+
+    }
 
     /**
      *
@@ -84,5 +99,14 @@ public class AppUtils {
             resources = jsonParser.parse(CalendarResources.class);
         }
         return resources;
+    }
+
+    public static CalendarResource findResourceByEmail(CalendarResources resources, String email){
+        for(CalendarResource resource : resources.getItems()){
+            if(resource.getResourceEmail().equals(email)){
+                return resource;
+            }
+        }
+        return null;
     }
 }
