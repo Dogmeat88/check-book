@@ -2,7 +2,9 @@ package nz.net.pseudo.checkbook;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.XmlResourceParser;
 import android.text.format.DateFormat;
+import android.util.Log;
 
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonParser;
@@ -11,12 +13,15 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.admin.directory.model.CalendarResource;
 import com.google.api.services.admin.directory.model.CalendarResources;
 
+import org.xmlpull.v1.XmlPullParser;
+
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -30,12 +35,6 @@ public class AppUtils {
     public static final String BEACON_STATE_KEY = "beaconStateKey";
     public static final String BEACON_OVERRIDE_DURATION_KEY = "beaconOverrideDurationKey";
     public static final long BEACON_POLL_DURATION_MS = 5000;
-
-    //Map beacon to resource email address
-    public static final Map<String, String> EUIDResourceMap;
-    static {
-        EUIDResourceMap = new HashMap<>();
-    }
 
     /**
      *
@@ -107,5 +106,51 @@ public class AppUtils {
             }
         }
         return null;
+    }
+
+    public static Map<String,String> getHashMapResource(Context c, int hashMapResId) {
+        Map<String,String> map = null;
+        XmlResourceParser parser = c.getResources().getXml(hashMapResId);
+
+        String key = null, value = null;
+
+        try {
+            int eventType = parser.getEventType();
+
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_DOCUMENT) {
+                    Log.d("utils","Start document");
+                } else if (eventType == XmlPullParser.START_TAG) {
+                    if (parser.getName().equals("map")) {
+                        boolean isLinked = parser.getAttributeBooleanValue(null, "linked", false);
+
+                        map = isLinked ? new LinkedHashMap<String, String>() : new HashMap<String, String>();
+                    } else if (parser.getName().equals("entry")) {
+                        key = parser.getAttributeValue(null, "key");
+
+                        if (null == key) {
+                            parser.close();
+                            return null;
+                        }
+                    }
+                } else if (eventType == XmlPullParser.END_TAG) {
+                    if (parser.getName().equals("entry")) {
+                        map.put(key, value);
+                        key = null;
+                        value = null;
+                    }
+                } else if (eventType == XmlPullParser.TEXT) {
+                    if (null != key) {
+                        value = parser.getText();
+                    }
+                }
+                eventType = parser.next();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return map;
     }
 }

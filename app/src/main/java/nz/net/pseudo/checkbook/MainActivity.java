@@ -56,6 +56,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
 import pub.devrel.easypermissions.AfterPermissionGranted;
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity
     private Beacon currentBeacon;
     private boolean beaconOverride;
     private CountDownTimer beaconOverrideCountdownTimer;
+    private Map<String, String> beaconResourceMap;
 
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
@@ -109,6 +111,8 @@ public class MainActivity extends AppCompatActivity
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
+
+        beaconResourceMap = AppUtils.getHashMapResource(this, R.xml.beacon_resource_map);
 
         beaconOverride = false;
 
@@ -648,7 +652,7 @@ public class MainActivity extends AppCompatActivity
 
         for (Beacon beacon: beaconList) {
             if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x00) {
-                if(AppUtils.EUIDResourceMap.containsKey(beacon.getId2().toString())) {
+                if(beaconResourceMap.containsKey(beacon.getId2().toString())) {
                     this.currentBeacon = beacon;
                     break;
                 }
@@ -662,7 +666,7 @@ public class MainActivity extends AppCompatActivity
     //Update the selected resource and associated events based on the detected beacon
     private void updateBeaconResource(){
         if(currentBeacon!=null && !beaconOverride) {
-            String beaconEmail = AppUtils.EUIDResourceMap.get(currentBeacon.getId2().toString());
+            String beaconEmail = beaconResourceMap.get(currentBeacon.getId2().toString());
             if (selectedResource == null || !beaconEmail.equals(selectedResource.getResourceEmail())) {
                 final CalendarResource beaconResource = AppUtils.findResourceByEmail(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources(), beaconEmail);
                 if (beaconResource != null) {
