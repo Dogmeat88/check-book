@@ -17,10 +17,29 @@
             android:orientation="vertical"
             android:padding="10dp">
 
-            <TextView
-                style="@style/text_heading"
-                android:text="@{resource==null?@string/resource_events_default_title:resource.resourceName}"
-                />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="10dp"
+                >
+                <TextView
+                    style="@style/text_heading"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.75"
+                    android:text="@{resource==null?@string/resource_events_default_title:resource.resourceName}"
+                    />
+
+                <TextView
+                    android:id="@+id/beacon_override_text"
+                    style="@style/text_content"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.25"
+                    android:visibility="invisible"
+                    android:gravity="center"
+                    android:textColor="@color/overrideText"
+                    />
+            </LinearLayout>
 
             <android.support.v4.widget.SwipeRefreshLayout
                 android:id="@+id/resource_events_refresh_layout"

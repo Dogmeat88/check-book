@@ -33,7 +33,7 @@ public class EventsParser {
 
     public Events parseEvents(Events rawEvents, CalendarResource selectedResource){
 
-        this.quickBookDurationMs = ((Activity)context).getPreferences(Context.MODE_PRIVATE).getInt(MainActivity.QUICKBOOK_DURATION_KEY, context.getResources().getInteger(R.integer.settings_event_duration_15min));
+        this.quickBookDurationMs = ((Activity)context).getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.QUICKBOOK_DURATION_KEY, context.getResources().getInteger(R.integer.settings_event_duration_15min));
         this.selectedResource=selectedResource;
 
         List<Event> fillEvents = new ArrayList<>();

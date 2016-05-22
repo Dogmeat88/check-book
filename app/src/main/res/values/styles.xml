@@ -18,7 +18,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
-    <style name="edit_event_title" parent="edit">
+    <style name="edit_standard" parent="edit">
         <item name="android:maxLength">15</item>
         <item name="android:singleLine">true</item>
     </style>
@@ -28,7 +28,7 @@
         <item name="android:layout_height">wrap_content</item>
     </style>
     <style name="text_heading" parent="text">
-        <item name="android:textSize">30sp</item>
+        <item name="android:textSize">25sp</item>
         <item name="android:textStyle">bold</item>
     </style>
     <style name="text_content" parent="text">

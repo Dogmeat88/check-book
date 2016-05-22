@@ -24,6 +24,10 @@ public class ResourceFilter extends Filter {
         this.calendarResources = calendarResources;
     }
 
+    public CalendarResources getCalendarResources() {
+        return calendarResources;
+    }
+
     @Override
     protected FilterResults performFiltering(CharSequence constraint) {
 
