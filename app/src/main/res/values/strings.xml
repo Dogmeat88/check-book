@@ -24,7 +24,7 @@
     <string name="resource_events_default_title">No Resource Selected</string>
 
     <string name="event_book_confirm_title">Quick Book</string>
-    <string name="event_book_confirm_content">Enter event description(Optional)</string>
+    <string name="event_book_confirm_content">Book new event from %1$s to %2$s \nEnter event description(Optional)</string>
     <string name="event_book_confirm_edittext_hint">Ad hoc</string>
     <string name="event_book_error_title">Booking Event Error</string>
     <string name="event_book_error_content">There was an error booking this event. Please try again.</string>
@@ -33,13 +33,13 @@
     <string name="event_book_progress_content">Booking Event</string>
 
     <string name="event_unbook_confirm_title">Unbook</string>
-    <string name="event_unbook_confirm_content">Unbook this event?</string>
+    <string name="event_unbook_confirm_content">%1$s\n%2$s to %3$s\nUnbook this event?</string>
     <string name="event_unbook_error_title">Un-book Event Error</string>
     <string name="event_unbook_error_content">There was an error unbooking this event. Please try again.</string>
     <string name="event_unbook_reoccurring_toast">This event is reoccurring, please use Google Calendar App to unbook</string>
     <string name="event_unbook_progress_content">Unbooking Event</string>
 
-    <string name="beacon_override_prefix">Beacon \nOverride</string>
+    <string name="beacon_override_prefix">Override\n</string>
 
     <string name="book_event_title">Quick Book</string>
 

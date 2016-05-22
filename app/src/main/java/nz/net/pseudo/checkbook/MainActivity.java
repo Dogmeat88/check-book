@@ -49,6 +49,7 @@ import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -152,6 +153,10 @@ public class MainActivity extends AppCompatActivity
             public void onItemClick(final AdapterView<?> parent, final View view, final int position, long id) {
                 final Event event = ((Event)parent.getItemAtPosition(position)).clone();
 
+                SimpleDateFormat systemTimeFormat = AppUtils.getLocalisedTimeFormatter(MainActivity.this);
+                String startDateString = systemTimeFormat.format(event.getStart().getDateTime().getValue());
+                String endDateString = systemTimeFormat.format(event.getEnd().getDateTime().getValue());
+
                 if(event.getCreator()==null) {
 
                     final EditText edittext = (EditText) LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
@@ -159,7 +164,7 @@ public class MainActivity extends AppCompatActivity
 
                     new AlertDialog.Builder(MainActivity.this)
                         .setTitle(getString(R.string.event_book_confirm_title))
-                        .setMessage(getString(R.string.event_book_confirm_content))
+                        .setMessage(String.format(getString(R.string.event_book_confirm_content),startDateString,endDateString))
                         .setView(edittext)
                         .setCancelable(true)
                         .setPositiveButton(
@@ -191,10 +196,21 @@ public class MainActivity extends AppCompatActivity
                 }else if(event.getCreator().getEmail().equals(credential.getSelectedAccountName())){
                     Log.d(TAG, "User's event");
 
+                    String descString = "";
+                    if(event.getDescription()!=null) {
+                        descString = event.getDescription();
+                    }else{
+                        if(event.getCreator().getDisplayName()!=null) {
+                            descString =event.getCreator().getDisplayName();
+                        }else{
+                            descString =event.getCreator().getEmail();
+                        }
+                    }
+
                     if(event.getRecurringEventId()==null) {
                         new AlertDialog.Builder(MainActivity.this)
                                 .setTitle(getString(R.string.event_unbook_confirm_title))
-                                .setMessage(getString(R.string.event_unbook_confirm_content))
+                                .setMessage(String.format(getString(R.string.event_unbook_confirm_content),descString,startDateString,endDateString))
                                 .setCancelable(true)
                                 .setPositiveButton(
                                         getString(R.string.okay_btn),
@@ -684,7 +700,7 @@ public class MainActivity extends AppCompatActivity
                     , getResources().getInteger(R.integer.settings_beacon_override_duration_default)), 1000) {
 
                 public void onTick(long millisUntilFinished) {
-                    mBinding.beaconOverrideText.setText(getString(R.string.beacon_override_prefix) + " " + String.valueOf(millisUntilFinished / 1000));
+                    mBinding.beaconOverrideText.setText(getString(R.string.beacon_override_prefix) + String.valueOf(millisUntilFinished / 1000));
                 }
 
                 public void onFinish() {

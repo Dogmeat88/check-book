@@ -31,11 +31,10 @@ public class AppUtils {
     public static final String BEACON_OVERRIDE_DURATION_KEY = "beaconOverrideDurationKey";
     public static final long BEACON_POLL_DURATION_MS = 5000;
 
-    //Map
+    //Map beacon to resource email address
     public static final Map<String, String> EUIDResourceMap;
     static {
         EUIDResourceMap = new HashMap<>();
-
     }
 
     /**
