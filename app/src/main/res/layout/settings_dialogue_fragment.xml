@@ -21,7 +21,7 @@
             <View style="@style/horizontal_line" />
 
             <TextView
-                style="@style/text_content"
+                style="@style/text_content_link"
                 android:text="@string/settings_event_duration_txt"
                 android:layout_marginTop="10dp"
                 />
@@ -46,7 +46,7 @@
             <View style="@style/horizontal_line" />
 
             <TextView
-                style="@style/text_content"
+                style="@style/text_content_link"
                 android:text="@string/settings_event_book_title_txt"
                 android:layout_marginTop="10dp"
                 />
@@ -58,7 +58,7 @@
             <View style="@style/horizontal_line" />
 
             <TextView
-                style="@style/text_content"
+                style="@style/text_content_link"
                 android:text="@string/settings_beacon_toggle"
                 android:layout_width="wrap_content"
                 android:layout_marginTop="10dp"
@@ -72,7 +72,7 @@
                 />
 
             <TextView
-                style="@style/text_content"
+                style="@style/text_content_link"
                 android:text="@string/settings_beacon_override_duration"
                 android:layout_marginTop="10dp"
                 />
@@ -86,7 +86,7 @@
             <View style="@style/horizontal_line" />
 
             <TextView
-                style="@style/text_content"
+                style="@style/text_content_link"
                 android:text="@string/settings_refresh_resources_txt"
                 android:layout_width="wrap_content"
                 android:layout_marginTop="10dp"

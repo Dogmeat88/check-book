@@ -21,6 +21,7 @@
             <View style="@style/horizontal_line" />
 
             <TextView
+                android:id="@+id/about_content_textview"
                 style="@style/text_content"
                 android:text="@string/about_content"
                 android:layout_marginTop="10dp"
