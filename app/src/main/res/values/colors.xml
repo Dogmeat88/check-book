@@ -14,6 +14,8 @@
 
     <color name="horizontalLine">#FF0000FF</color>
 
-    <color name="overrideText">#FF0000</color>
+    <color name="warning">#FF0000</color>
+
+
 
 </resources>

@@ -51,6 +51,7 @@
     <string name="settings_event_duration_15min">15 Minutes</string>
     <string name="settings_event_duration_30min">30 Minutes</string>
     <string name="settings_beacon_toggle">Enable/Disable Beacon Feature</string>
+    <string name="settings_beacon_disabled">This feature is not available for this version of Android</string>
     <string name="settings_beacon_override_duration">Set the Beacon override duration in Seconds</string>
 
     <string name="about_title">About Check, Book</string>

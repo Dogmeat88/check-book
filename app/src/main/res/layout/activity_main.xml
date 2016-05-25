@@ -37,7 +37,7 @@
                     android:layout_weight="0.25"
                     android:visibility="invisible"
                     android:gravity="center"
-                    android:textColor="@color/overrideText"
+                    android:textColor="@color/warning"
                     />
             </LinearLayout>
 

@@ -1,6 +1,7 @@
 package nz.net.pseudo.checkbook;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
@@ -86,6 +87,12 @@ public class SettingsDialogueFragment extends DialogFragment{
 
 
         mBinding.settingsBeaconToggleButton.setChecked(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false));
+
+        //Disable beacon support if not available
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            mBinding.settingsBeaconToggleButton.setEnabled(false);
+            mBinding.settingsBeaconDisabled.setVisibility(View.VISIBLE);
+        }
 
         mBinding.settingsBeaconToggleButton.setOnCheckedChangeListener(
             new CompoundButton.OnCheckedChangeListener() {
