@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
+import android.widget.SeekBar;
 
 import nz.net.pseudo.checkbook.databinding.SettingsDialogueFragmentBinding;
 
@@ -85,6 +86,29 @@ public class SettingsDialogueFragment extends DialogFragment{
         });
 
 
+        mBinding.editEmailContent.setHint(getActivity().getPreferences(Context.MODE_PRIVATE).getString(AppUtils.EVENT_EMAIL_CONTENT_KEY, getString(R.string.event_email_default_content_prefix)));
+        mBinding.editEmailContent.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //do nothing
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if("".equals(s.toString())){
+                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().remove(AppUtils.EVENT_EMAIL_CONTENT_KEY).commit();
+                }else {
+                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().putString(AppUtils.EVENT_EMAIL_CONTENT_KEY, s.toString()).commit();
+                }
+            }
+        });
+
+
 
         mBinding.settingsBeaconToggleButton.setChecked(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false));
 
@@ -107,7 +131,7 @@ public class SettingsDialogueFragment extends DialogFragment{
 
         mBinding.editBeaconOverride.setHint(
                 String.valueOf(getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY
-                , getResources().getInteger(R.integer.settings_beacon_override_duration_default))/1000));
+                , getResources().getInteger(R.integer.settings_beacon_override_duration_default_ms))/1000));
 
         mBinding.editBeaconOverride.addTextChangedListener(new TextWatcher() {
             @Override
@@ -129,6 +153,27 @@ public class SettingsDialogueFragment extends DialogFragment{
                 }
             }
         });
+
+        int savedDistance = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY, getActivity().getResources().getInteger(R.integer.settings_beacon_trigger_distance_default_m));
+        mBinding.seekBeaconTriggerDistanceValue.setText(savedDistance+"m");
+        mBinding.seekBeaconTriggerDistance.setProgress(savedDistance);
+        mBinding.seekBeaconTriggerDistance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mBinding.seekBeaconTriggerDistanceValue.setText((progress+1)+"m");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY, seekBar.getProgress()+1).commit();
+            }
+        });
+
 
         mBinding.settingsRefreshResourcesButton.setOnClickListener(new View.OnClickListener() {
             @Override

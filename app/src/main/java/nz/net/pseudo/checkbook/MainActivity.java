@@ -3,6 +3,7 @@ package nz.net.pseudo.checkbook;
 import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Dialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -55,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -87,12 +89,13 @@ public class MainActivity extends AppCompatActivity
     private boolean beaconOverride;
     private CountDownTimer beaconOverrideCountdownTimer;
     private Map<String, String> beaconResourceMap;
+    private boolean bluetoothEnabled;
 
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS_FINE_LOCATION = 1003;
+    static final int PERMISSIONS = 1003;
 
     private static final String PREF_ACCOUNT_NAME_KEY = "accountNameKey";
     private static final String FRAG_SETTINGS_KEY = "fragSettingsKey";
@@ -157,9 +160,9 @@ public class MainActivity extends AppCompatActivity
             public void onItemClick(final AdapterView<?> parent, final View view, final int position, long id) {
                 final Event event = ((Event)parent.getItemAtPosition(position)).clone();
 
-                SimpleDateFormat systemTimeFormat = AppUtils.getLocalisedTimeFormatter(MainActivity.this);
-                String startDateString = systemTimeFormat.format(event.getStart().getDateTime().getValue());
-                String endDateString = systemTimeFormat.format(event.getEnd().getDateTime().getValue());
+                final SimpleDateFormat systemTimeFormat = AppUtils.getLocalisedTimeFormatter(MainActivity.this);
+                final String startDateString = systemTimeFormat.format(event.getStart().getDateTime().getValue());
+                final String endDateString = systemTimeFormat.format(event.getEnd().getDateTime().getValue());
 
                 if(event.getCreator()==null) {
 
@@ -214,7 +217,7 @@ public class MainActivity extends AppCompatActivity
                     if(event.getRecurringEventId()==null) {
                         new AlertDialog.Builder(MainActivity.this)
                                 .setTitle(getString(R.string.event_unbook_confirm_title))
-                                .setMessage(String.format(getString(R.string.event_unbook_confirm_content),descString,startDateString,endDateString))
+                                .setMessage(getString(R.string.event_unbook_confirm_content,descString,startDateString,endDateString))
                                 .setCancelable(true)
                                 .setPositiveButton(
                                         getString(R.string.okay_btn),
@@ -241,6 +244,45 @@ public class MainActivity extends AppCompatActivity
                         Toast.makeText(MainActivity.this, R.string.event_unbook_reoccurring_toast, Toast.LENGTH_SHORT).show();
                     }
 
+                }else{
+                    //someone else's booking
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle(getString(R.string.event_email_confirm_title))
+                            .setMessage(String.format(getString(R.string.event_email_confirm_content),event.getCreator().getEmail()))
+                            .setCancelable(true)
+                            .setPositiveButton(
+                                    getString(R.string.okay_btn),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            Log.d(TAG, "Email Event Creator: "+event.getCreator().getEmail());
+
+                                            Intent intent = new Intent(Intent.ACTION_SEND);
+                                            intent.setType("message/rfc822");
+                                            intent.putExtra(Intent.EXTRA_EMAIL  , new String[]{event.getCreator().getEmail()});
+                                            intent.putExtra(Intent.EXTRA_SUBJECT, selectedResource.getResourceName()+getString(R.string.event_email_subject_suffix));
+                                            intent.putExtra(Intent.EXTRA_TEXT
+                                                    ,getString(R.string.event_email_content
+                                                        ,getPreferences(Context.MODE_PRIVATE).getString(AppUtils.EVENT_EMAIL_CONTENT_KEY, getString(R.string.event_email_default_content_prefix))
+                                                        ,selectedResource.getResourceName()
+                                                        ,startDateString+" - "+endDateString
+                                                        ,event.getSummary()
+                                            ));
+                                            try {
+                                                startActivity(Intent.createChooser(intent, AppUtils.EVENT_EMAIL_INTENT_KEY));
+                                            } catch (android.content.ActivityNotFoundException ex) {
+                                                Toast.makeText(MainActivity.this, getString(R.string.event_email_error), Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    }
+                            )
+                            .setNegativeButton(
+                                    getString(R.string.cancel_btn),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    }
+                            ).show();
                 }
 
             }
@@ -328,6 +370,7 @@ public class MainActivity extends AppCompatActivity
         beaconManager = BeaconManager.getInstanceForApplication(this);
 
         beaconManager.setForegroundScanPeriod(AppUtils.BEACON_POLL_DURATION_MS);
+
         // Detect the main identifier (UID) frame:
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=00,p:3-3:-41,i:4-13,i:14-19"));
         // Detect the telemetry (TLM) frame:
@@ -378,7 +421,7 @@ public class MainActivity extends AppCompatActivity
      * function will be rerun automatically whenever the GET_ACCOUNTS permission
      * is granted.
      */
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS_FINE_LOCATION)
+    @AfterPermissionGranted(PERMISSIONS)
     private void chooseAccount() {
 
         String[] perms = {Manifest.permission.GET_ACCOUNTS, Manifest.permission.ACCESS_FINE_LOCATION};
@@ -397,7 +440,7 @@ public class MainActivity extends AppCompatActivity
             EasyPermissions.requestPermissions(
                     this,
                     "This app needs to access your Google account (via Contacts) and you Location",
-                    REQUEST_PERMISSION_GET_ACCOUNTS_FINE_LOCATION,
+                    PERMISSIONS,
                     perms);
         }
     }
@@ -631,7 +674,7 @@ public class MainActivity extends AppCompatActivity
         try {
             beaconManager.startRangingBeaconsInRegion(region);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
        beaconManager.setRangeNotifier(this);
 
@@ -639,6 +682,28 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+            Log.w(TAG, "Bluetooth disabled");
+            bluetoothEnabled = false;
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    mBinding.beaconInformational.setText(getString(R.string.bluetooth_disabled_warning));
+                    mBinding.beaconInformational.setVisibility(View.VISIBLE);
+                }
+            });
+            this.currentBeacon = null;
+        }else{
+            bluetoothEnabled = true;
+            if(!beaconOverride) {
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        mBinding.beaconInformational.setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+        }
 
         List<Beacon> beaconList = new ArrayList(beacons);
         //sort the beacons by distance from closest to farthest
@@ -665,7 +730,19 @@ public class MainActivity extends AppCompatActivity
 
     //Update the selected resource and associated events based on the detected beacon
     private void updateBeaconResource(){
-        if(currentBeacon!=null && !beaconOverride) {
+        if(    currentBeacon!=null
+            && !beaconOverride
+            && currentBeacon.getDistance() <= getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY, getResources().getInteger(R.integer.settings_beacon_trigger_distance_default_m))){
+
+            //Display
+//            runOnUiThread(new Runnable() {
+//                public void run() {
+//                    mBinding.beaconInformational.setText(currentBeacon.getDistance()+"m");
+//                    mBinding.beaconInformational.setVisibility(View.VISIBLE);
+//                }
+//            });
+
+
             String beaconEmail = beaconResourceMap.get(currentBeacon.getId2().toString());
             if (selectedResource == null || !beaconEmail.equals(selectedResource.getResourceEmail())) {
                 final CalendarResource beaconResource = AppUtils.findResourceByEmail(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources(), beaconEmail);
@@ -692,25 +769,25 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void suspendBeacon() {
-        if(getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false)) {
+        if(getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false) && bluetoothEnabled) {
             beaconOverride = true;
-            mBinding.beaconOverrideText.setVisibility(View.VISIBLE);
+            mBinding.beaconInformational.setVisibility(View.VISIBLE);
 
             if(beaconOverrideCountdownTimer!=null){
                 beaconOverrideCountdownTimer.cancel();
             }
 
             beaconOverrideCountdownTimer = new CountDownTimer(getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY
-                    , getResources().getInteger(R.integer.settings_beacon_override_duration_default)), 1000) {
+                    , getResources().getInteger(R.integer.settings_beacon_override_duration_default_ms)), 1000) {
 
                 public void onTick(long millisUntilFinished) {
-                    mBinding.beaconOverrideText.setText(getString(R.string.beacon_override_prefix) + String.valueOf(millisUntilFinished / 1000));
+                    mBinding.beaconInformational.setText(getString(R.string.beacon_override_prefix) + String.valueOf(millisUntilFinished / 1000));
                 }
 
                 public void onFinish() {
                     Log.v(TAG, "CountDownTimer.onFinish()");
                     beaconOverride = false;
-                    mBinding.beaconOverrideText.setVisibility(View.INVISIBLE);
+                    mBinding.beaconInformational.setVisibility(View.INVISIBLE);
                 }
             }.start();
         }

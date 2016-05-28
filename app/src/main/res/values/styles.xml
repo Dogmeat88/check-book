@@ -17,15 +17,26 @@
     <style name="edit">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_standard</item>
     </style>
     <style name="edit_standard" parent="edit">
         <item name="android:maxLength">15</item>
         <item name="android:singleLine">true</item>
     </style>
+    <style name="edit_multiline" parent="edit">
+        <item name="android:maxLength">100</item>
+        <item name="android:inputType">textMultiLine</item>
+        <item name="android:lines">3</item>
+        <item name="android:minLines">2</item>
+        <item name="android:gravity">top|left</item>
+        <item name="android:maxLines">5</item>
+        <item name="android:scrollbars">vertical</item>
+    </style>
 
     <style name="text">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_standard</item>
     </style>
     <style name="text_heading" parent="text">
         <item name="android:textSize">25sp</item>

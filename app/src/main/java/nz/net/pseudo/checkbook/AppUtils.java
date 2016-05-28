@@ -34,7 +34,10 @@ public class AppUtils {
     public static final String QUICKBOOK_DURATION_KEY = "quickBookDurationKey";
     public static final String BEACON_STATE_KEY = "beaconStateKey";
     public static final String BEACON_OVERRIDE_DURATION_KEY = "beaconOverrideDurationKey";
-    public static final long BEACON_POLL_DURATION_MS = 5000;
+    public static final String BEACON_TRIGGER_DISTANCE_KEY = "beaconTriggerDistanceKey";
+    public static final String EVENT_EMAIL_INTENT_KEY = "eventEmailIntentKey";
+    public static final String EVENT_EMAIL_CONTENT_KEY = "eventEmailContentKey";
+    public static final long BEACON_POLL_DURATION_MS = 2000;
 
     /**
      *

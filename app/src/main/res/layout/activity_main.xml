@@ -27,17 +27,19 @@
                     style="@style/text_heading"
                     android:layout_width="0dp"
                     android:layout_weight="0.75"
+                    android:layout_height="match_parent"
                     android:text="@{resource==null?@string/resource_events_default_title:resource.resourceName}"
                     />
 
                 <TextView
-                    android:id="@+id/beacon_override_text"
-                    style="@style/text_content_link"
+                    android:id="@+id/beacon_informational"
                     android:layout_width="0dp"
                     android:layout_weight="0.25"
+                    android:layout_height="match_parent"
                     android:visibility="invisible"
                     android:gravity="center"
-                    android:textColor="@color/warning"
+                    android:textColor="@color/text_warning"
+                    android:textSize="15sp"
                     />
             </LinearLayout>
 

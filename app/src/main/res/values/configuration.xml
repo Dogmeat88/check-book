@@ -6,6 +6,9 @@
     <integer name="settings_event_duration_15min">900000</integer>
     <integer name="settings_event_duration_30min">1800000</integer>
 
-    <integer name="settings_beacon_override_duration_default">25000</integer>
+    <integer name="settings_beacon_override_duration_default_ms">25000</integer>
+    <integer name="settings_beacon_trigger_distance_default_m">5</integer>
+
+    <string name="event_email_default_content_prefix">Do you still need this room? Please un-book if you do not. \nThanks</string>
     
 </resources>

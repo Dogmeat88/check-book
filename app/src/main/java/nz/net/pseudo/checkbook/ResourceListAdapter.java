@@ -65,10 +65,8 @@ public class ResourceListAdapter extends BaseAdapter implements Filterable {
 
         ImageView resourceIcon = (ImageView) convertView.findViewById(R.id.resource_icon);
 
-        if(filteredCalendarResources.getItems().get(position).getResourceType().equals("MeetingRoom")){
+        if(filteredCalendarResources.getItems().get(position).getResourceType().contains("Room")){
             resourceIcon.setImageResource(R.drawable.ic_people_black_24dp);
-        }else if(filteredCalendarResources.getItems().get(position).getResourceType().equals("Resource")){
-            resourceIcon.setImageResource(R.drawable.ic_videocam_black_24dp);
         }else{
             //default
             resourceIcon.setImageResource(R.drawable.ic_help_black_24dp);

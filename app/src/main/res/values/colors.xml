@@ -14,8 +14,8 @@
 
     <color name="horizontalLine">#FF0000FF</color>
 
-    <color name="warning">#FF0000</color>
+    <color name="text_warning">#FF0000</color>
 
-
+    <color name="text_standard">#000000</color>
 
 </resources>

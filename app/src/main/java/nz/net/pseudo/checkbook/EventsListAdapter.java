@@ -71,9 +71,7 @@ public class EventsListAdapter extends BaseAdapter {
 
         if(eventItem.getCreator()!=null) {
             TextView eventCreator = (TextView) convertView.findViewById(R.id.event_creator);
-            if(eventItem.getCreator().getDisplayName()!=null) {
-                eventCreator.setText(eventItem.getCreator().getDisplayName());
-            }else if(eventItem.getCreator().getEmail()!=null){
+            if(eventItem.getCreator().getEmail()!=null){
                 eventCreator.setText(eventItem.getCreator().getEmail());
             }
         }
