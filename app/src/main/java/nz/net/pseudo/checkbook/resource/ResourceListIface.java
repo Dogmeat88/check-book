@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.checkbook.resource;
 
 import com.google.api.services.admin.directory.model.CalendarResources;
 

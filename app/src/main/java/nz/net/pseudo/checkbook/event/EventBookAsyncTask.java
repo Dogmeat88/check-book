@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.checkbook.event;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -13,6 +13,8 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
+
+import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 24/04/16.
@@ -74,7 +76,7 @@ public class EventBookAsyncTask extends AsyncTask<Void, Void, Event> {
 
             //if we are happy the time slot is still free, then book it
             if(events.getItems().size()==0){
-               return mCalendar.events().insert("primary", this.bookEvent).execute();
+               return mCalendar.events().insert(context.getString(R.string.event_primary_email), this.bookEvent).execute();
             }else{
                 //Someone must have snuck in and booked the room
                 this.bookEvent.setCreator(null);

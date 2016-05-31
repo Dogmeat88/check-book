@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.RemoteException;
@@ -56,11 +57,25 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import nz.net.pseudo.checkbook.beacon.BeaconIface;
 import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
+import nz.net.pseudo.checkbook.event.EventBookAsyncTask;
+import nz.net.pseudo.checkbook.event.EventBookIface;
+import nz.net.pseudo.checkbook.event.EventGetAsyncTask;
+import nz.net.pseudo.checkbook.event.EventGetIface;
+import nz.net.pseudo.checkbook.event.EventUnbookAsyncTask;
+import nz.net.pseudo.checkbook.event.EventUnbookIface;
+import nz.net.pseudo.checkbook.event.EventsListAdapter;
+import nz.net.pseudo.checkbook.event.EventsListAsyncTask;
+import nz.net.pseudo.checkbook.event.EventsListIface;
+import nz.net.pseudo.checkbook.event.EventsParser;
+import nz.net.pseudo.checkbook.resource.ResourceFilter;
+import nz.net.pseudo.checkbook.resource.ResourceListAdapter;
+import nz.net.pseudo.checkbook.resource.ResourceListAsyncTask;
+import nz.net.pseudo.checkbook.resource.ResourceListIface;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -74,6 +89,7 @@ public class MainActivity extends AppCompatActivity
         , BeaconConsumer
         , RangeNotifier
         , BeaconIface
+        , EventGetIface
         {
     private final String TAG = this.getClass().getSimpleName();
 
@@ -92,10 +108,10 @@ public class MainActivity extends AppCompatActivity
     private boolean bluetoothEnabled;
 
 
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_AUTHORIZATION = 1001;
-    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int PERMISSIONS = 1003;
+    static public final int REQUEST_ACCOUNT_PICKER = 1000;
+    static public final int REQUEST_AUTHORIZATION = 1001;
+    static public final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
+    static public final int PERMISSIONS = 1003;
 
     private static final String PREF_ACCOUNT_NAME_KEY = "accountNameKey";
     private static final String FRAG_SETTINGS_KEY = "fragSettingsKey";
@@ -159,34 +175,81 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onItemClick(final AdapterView<?> parent, final View view, final int position, long id) {
                 final Event event = ((Event)parent.getItemAtPosition(position)).clone();
+                processEvent(event, position);
+            }
+        });
+        init();
+    }
 
-                final SimpleDateFormat systemTimeFormat = AppUtils.getLocalisedTimeFormatter(MainActivity.this);
-                final String startDateString = systemTimeFormat.format(event.getStart().getDateTime().getValue());
-                final String endDateString = systemTimeFormat.format(event.getEnd().getDateTime().getValue());
+    private void processEvent(final Event event, final Integer position){
+        final SimpleDateFormat systemTimeFormat = AppUtils.getLocalisedTimeFormatter(MainActivity.this);
+        final String startDateString = systemTimeFormat.format(event.getStart().getDateTime().getValue());
+        final String endDateString = systemTimeFormat.format(event.getEnd().getDateTime().getValue());
 
-                if(event.getCreator()==null) {
+        if(event.getCreator()==null) {
 
-                    final EditText edittext = (EditText) LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
-                    edittext.setHint(getPreferences(Context.MODE_PRIVATE).getString(AppUtils.QUICKBOOK_TITLE_KEY, getString(R.string.event_book_confirm_edittext_hint)));
+            final EditText edittext = (EditText) LayoutInflater.from(MainActivity.this).inflate(R.layout.event_book_confirm_edittext, null).findViewById(R.id.event_book_confirm_edittext);
+            edittext.setHint(getPreferences(Context.MODE_PRIVATE).getString(AppUtils.QUICKBOOK_TITLE_KEY, getString(R.string.event_book_confirm_edittext_hint)));
 
-                    new AlertDialog.Builder(MainActivity.this)
-                        .setTitle(getString(R.string.event_book_confirm_title))
-                        .setMessage(String.format(getString(R.string.event_book_confirm_content),startDateString,endDateString))
-                        .setView(edittext)
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(getString(R.string.event_book_confirm_title))
+                    .setMessage(String.format(getString(R.string.event_book_confirm_content),startDateString,endDateString))
+                    .setView(edittext)
+                    .setCancelable(true)
+                    .setPositiveButton(
+                            getString(R.string.okay_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Log.d(TAG, (edittext.getText().toString()));
+                                    event.setSummary("".equals(edittext.getText().toString()) ? edittext.getHint().toString() : edittext.getText().toString());
+                                    new EventBookAsyncTask(
+                                            MainActivity.this
+                                            , MainActivity.this.credential
+                                            , MainActivity.this
+                                            , MainActivity.this.selectedResource.getResourceEmail()
+                                            , event
+                                            , position
+                                    ).execute();
+                                }
+                            }
+                    )
+                    .setNegativeButton(
+                            getString(R.string.cancel_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            }
+                    ).show();
+
+        }else if(event.getCreator().getEmail().equals(credential.getSelectedAccountName())){
+            Log.d(TAG, "User's event");
+
+            String descString = "";
+            if(event.getDescription()!=null) {
+                descString = event.getDescription();
+            }else{
+                if(event.getCreator().getDisplayName()!=null) {
+                    descString =event.getCreator().getDisplayName();
+                }else{
+                    descString =event.getCreator().getEmail();
+                }
+            }
+
+            if(event.getRecurringEventId()==null) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle(getString(R.string.event_unbook_confirm_title))
+                        .setMessage(getString(R.string.event_unbook_confirm_content,descString,startDateString,endDateString))
                         .setCancelable(true)
                         .setPositiveButton(
                                 getString(R.string.okay_btn),
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        Log.d(TAG, (edittext.getText().toString()));
-                                        event.setSummary("".equals(edittext.getText().toString()) ? edittext.getHint().toString() : edittext.getText().toString());
-                                        new EventBookAsyncTask(
+                                        new EventUnbookAsyncTask(
                                                 MainActivity.this
                                                 , MainActivity.this.credential
                                                 , MainActivity.this
-                                                , MainActivity.this.selectedResource.getResourceEmail()
                                                 , event
-                                                , position
                                         ).execute();
                                     }
                                 }
@@ -198,96 +261,55 @@ public class MainActivity extends AppCompatActivity
                                         dialog.cancel();
                                     }
                                 }
-                    ).show();
-
-                }else if(event.getCreator().getEmail().equals(credential.getSelectedAccountName())){
-                    Log.d(TAG, "User's event");
-
-                    String descString = "";
-                    if(event.getDescription()!=null) {
-                        descString = event.getDescription();
-                    }else{
-                        if(event.getCreator().getDisplayName()!=null) {
-                            descString =event.getCreator().getDisplayName();
-                        }else{
-                            descString =event.getCreator().getEmail();
-                        }
-                    }
-
-                    if(event.getRecurringEventId()==null) {
-                        new AlertDialog.Builder(MainActivity.this)
-                                .setTitle(getString(R.string.event_unbook_confirm_title))
-                                .setMessage(getString(R.string.event_unbook_confirm_content,descString,startDateString,endDateString))
-                                .setCancelable(true)
-                                .setPositiveButton(
-                                        getString(R.string.okay_btn),
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                new EventUnbookAsyncTask(
-                                                        MainActivity.this
-                                                        , MainActivity.this.credential
-                                                        , MainActivity.this
-                                                        , event
-                                                ).execute();
-                                            }
-                                        }
-                                )
-                                .setNegativeButton(
-                                        getString(R.string.cancel_btn),
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
-                                            }
-                                        }
-                                ).show();
-                    }else{
-                        Toast.makeText(MainActivity.this, R.string.event_unbook_reoccurring_toast, Toast.LENGTH_SHORT).show();
-                    }
-
-                }else{
-                    //someone else's booking
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setTitle(getString(R.string.event_email_confirm_title))
-                            .setMessage(String.format(getString(R.string.event_email_confirm_content),event.getCreator().getEmail()))
-                            .setCancelable(true)
-                            .setPositiveButton(
-                                    getString(R.string.okay_btn),
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            Log.d(TAG, "Email Event Creator: "+event.getCreator().getEmail());
-
-                                            Intent intent = new Intent(Intent.ACTION_SEND);
-                                            intent.setType("message/rfc822");
-                                            intent.putExtra(Intent.EXTRA_EMAIL  , new String[]{event.getCreator().getEmail()});
-                                            intent.putExtra(Intent.EXTRA_SUBJECT, selectedResource.getResourceName()+getString(R.string.event_email_subject_suffix));
-                                            intent.putExtra(Intent.EXTRA_TEXT
-                                                    ,getString(R.string.event_email_content
-                                                        ,getPreferences(Context.MODE_PRIVATE).getString(AppUtils.EVENT_EMAIL_CONTENT_KEY, getString(R.string.event_email_default_content_prefix))
-                                                        ,selectedResource.getResourceName()
-                                                        ,startDateString+" - "+endDateString
-                                                        ,event.getSummary()
-                                            ));
-                                            try {
-                                                startActivity(Intent.createChooser(intent, AppUtils.EVENT_EMAIL_INTENT_KEY));
-                                            } catch (android.content.ActivityNotFoundException ex) {
-                                                Toast.makeText(MainActivity.this, getString(R.string.event_email_error), Toast.LENGTH_SHORT).show();
-                                            }
-                                        }
-                                    }
-                            )
-                            .setNegativeButton(
-                                    getString(R.string.cancel_btn),
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            dialog.cancel();
-                                        }
-                                    }
-                            ).show();
-                }
-
+                        ).show();
+            }else{
+                Toast.makeText(MainActivity.this, R.string.event_unbook_reoccurring_toast, Toast.LENGTH_SHORT).show();
             }
-        });
-        init();
+
+        }else{
+            //someone else's booking
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(getString(R.string.event_email_confirm_title))
+                    .setMessage(String.format(getString(R.string.event_email_confirm_content),event.getCreator().getEmail()))
+                    .setCancelable(true)
+                    .setPositiveButton(
+                            getString(R.string.okay_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Log.d(TAG, "Email Event Creator: "+event.getCreator().getEmail());
+
+                                    Intent intent = new Intent(Intent.ACTION_SEND);
+                                    intent.setType("message/rfc822");
+                                    intent.putExtra(Intent.EXTRA_EMAIL  , new String[]{event.getCreator().getEmail()});
+                                    intent.putExtra(Intent.EXTRA_SUBJECT, selectedResource.getResourceName()+getString(R.string.event_email_subject_suffix));
+                                    intent.putExtra(Intent.EXTRA_TEXT
+                                            ,getString(R.string.event_email_content
+                                                    ,getPreferences(Context.MODE_PRIVATE).getString(AppUtils.EVENT_EMAIL_CONTENT_KEY, getString(R.string.event_email_default_content_prefix))
+                                                    ,selectedResource.getResourceName()
+                                                    ,startDateString+" - "+endDateString
+                                                    ,event.getSummary()
+                                                    ,event.getHtmlLink()+getString(R.string.event_email_checkbook_unbook_parameter, getString(R.string.event_id_key), event.getId())
+                                            )
+                                    );
+
+                                    try {
+                                        startActivity(Intent.createChooser(intent, AppUtils.EVENT_EMAIL_INTENT_KEY));
+                                    } catch (android.content.ActivityNotFoundException ex) {
+                                        Toast.makeText(MainActivity.this, getString(R.string.event_email_error), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+                    )
+                    .setNegativeButton(
+                            getString(R.string.cancel_btn),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            }
+                    ).show();
+        }
+
     }
 
     private void selectResource(CalendarResource resource){
@@ -369,7 +391,8 @@ public class MainActivity extends AppCompatActivity
 
         beaconManager = BeaconManager.getInstanceForApplication(this);
 
-        beaconManager.setForegroundScanPeriod(AppUtils.BEACON_POLL_DURATION_MS);
+        beaconManager.setForegroundScanPeriod(getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_SCAN_RATE_KEY
+                , getResources().getInteger(R.integer.settings_beacon_scan_rate_default_ms)));
 
         // Detect the main identifier (UID) frame:
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=00,p:3-3:-41,i:4-13,i:14-19"));
@@ -393,6 +416,7 @@ public class MainActivity extends AppCompatActivity
         if(beaconManager!=null) {
             beaconManager.bind(this);
         }
+        parseIntent();
     }
 
     @Override
@@ -593,6 +617,24 @@ public class MainActivity extends AppCompatActivity
         if(getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false)) {
             initBeacons();
         }
+
+    }
+
+    private void parseIntent() {
+        Uri data = this.getIntent().getData();
+        if (data != null && data.isHierarchical()) {
+            String intentUri = this.getIntent().getDataString();
+            Log.i(TAG, "Deep link clicked " + intentUri);
+
+            Uri uri = Uri.parse(intentUri);
+
+            new EventGetAsyncTask(
+                    MainActivity.this
+                    , MainActivity.this.credential
+                    , MainActivity.this
+                    , uri.getQueryParameter(getString(R.string.event_id_key))
+            ).execute();
+        }
     }
 
     @Override
@@ -620,6 +662,12 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
+    public void onEventGetSuccess(Event event) {
+        //Unbook then event once gotten
+        processEvent(event, null);
+    }
+
+            @Override
     public void onFail(String title, String content) {
         mBinding.resourceEventsRefreshLayout.setRefreshing(false);
         new AlertDialog.Builder(this)

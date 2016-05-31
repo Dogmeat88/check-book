@@ -1,6 +1,5 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.checkbook.resource;
 
-import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,8 @@ import com.google.api.services.admin.directory.model.CalendarResource;
 import com.google.api.services.admin.directory.model.CalendarResources;
 
 import java.util.ArrayList;
+
+import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 25/04/16.

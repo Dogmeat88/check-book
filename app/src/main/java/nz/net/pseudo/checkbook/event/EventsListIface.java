@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.checkbook.event;
 
 import com.google.api.services.calendar.model.Events;
 

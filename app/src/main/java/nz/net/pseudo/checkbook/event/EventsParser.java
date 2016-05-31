@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.checkbook.event;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +13,9 @@ import com.google.api.services.calendar.model.Events;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import nz.net.pseudo.checkbook.AppUtils;
+import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 30/04/16.

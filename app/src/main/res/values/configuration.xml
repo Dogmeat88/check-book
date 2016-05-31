@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="resource_filter_id">resourceFilterId</string>
-    <!--<string name="global_shared_preferences_id">globalSharedPreferences</string>-->
 
     <integer name="settings_event_duration_15min">900000</integer>
     <integer name="settings_event_duration_30min">1800000</integer>
 
     <integer name="settings_beacon_override_duration_default_ms">25000</integer>
     <integer name="settings_beacon_trigger_distance_default_m">5</integer>
+    <integer name="settings_beacon_scan_rate_default_ms">3000</integer>
 
     <string name="event_email_default_content_prefix">Do you still need this room? Please un-book if you do not. \nThanks</string>
-    
+
+    <!--<string name="event_email_calendar_unbook_link">https://calendar.google.com/calendar/render?eid=%1$s</string>-->
+    <string name="event_email_checkbook_unbook_parameter">&amp;%1$s=%2$s</string>
+
+    <string name="event_primary_email">primary</string>
+    <string name="event_id_key">cbid</string>
+
 </resources>

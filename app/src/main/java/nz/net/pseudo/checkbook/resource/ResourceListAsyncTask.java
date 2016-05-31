@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.checkbook.resource;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -17,6 +17,9 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.admin.directory.Directory;
 import com.google.api.services.admin.directory.model.CalendarResources;
+
+import nz.net.pseudo.checkbook.MainActivity;
+import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 24/04/16.

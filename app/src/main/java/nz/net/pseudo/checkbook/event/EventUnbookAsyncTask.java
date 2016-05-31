@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.checkbook.event;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -12,6 +12,8 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
+
+import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 24/04/16.
@@ -54,7 +56,7 @@ public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(Void... params) {
         try {
 
-            mCalendar.events().delete("primary", this.unbookEvent.getId()).execute();
+            mCalendar.events().delete(context.getString(R.string.event_primary_email), this.unbookEvent.getId()).execute();
             return true;
 
         } catch (Exception e) {

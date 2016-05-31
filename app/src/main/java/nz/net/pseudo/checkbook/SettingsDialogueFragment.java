@@ -13,7 +13,10 @@ import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 
+import nz.net.pseudo.checkbook.beacon.BeaconIface;
 import nz.net.pseudo.checkbook.databinding.SettingsDialogueFragmentBinding;
+import nz.net.pseudo.checkbook.event.EventsListIface;
+import nz.net.pseudo.checkbook.resource.ResourceListIface;
 
 /**
  * Created by i on 10/05/16.
@@ -129,30 +132,53 @@ public class SettingsDialogueFragment extends DialogFragment{
         );
 
 
-        mBinding.editBeaconOverride.setHint(
-                String.valueOf(getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY
-                , getResources().getInteger(R.integer.settings_beacon_override_duration_default_ms))/1000));
-
-        mBinding.editBeaconOverride.addTextChangedListener(new TextWatcher() {
+        int savedScanRate = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_SCAN_RATE_KEY
+                , getResources().getInteger(R.integer.settings_beacon_scan_rate_default_ms))/1000;
+        mBinding.seekBeaconScanRateValue.setText(savedScanRate+"s");
+        mBinding.seekBeaconScanRate.setProgress(savedScanRate);
+        mBinding.seekBeaconScanRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                //do nothing
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mBinding.seekBeaconScanRateValue.setText((progress+1)+"s");
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //do nothing
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
-                if("".equals(s.toString())){
-                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().remove(AppUtils.BEACON_OVERRIDE_DURATION_KEY).commit();
-                }else {
-                    getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY, Integer.valueOf(s.toString())*1000).commit();
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.BEACON_SCAN_RATE_KEY, (seekBar.getProgress() + 1) * 1000).commit();
+                if(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false)) {
+                    beaconImpl.setBeaconEnabled(false);
+                    beaconImpl.setBeaconEnabled(true);
                 }
             }
         });
+
+
+        int savedOverrideDuration = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY
+                , getResources().getInteger(R.integer.settings_beacon_override_duration_default_ms))/1000;
+        mBinding.seekBeaconOverrideDurationValue.setText(savedOverrideDuration+"s");
+        mBinding.seekBeaconOverrideDuration.setProgress(savedOverrideDuration);
+        mBinding.seekBeaconOverrideDuration.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mBinding.seekBeaconOverrideDurationValue.setText((progress+1)+"s");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY, (seekBar.getProgress()+1)*1000).commit();
+            }
+        });
+
 
         int savedDistance = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY, getActivity().getResources().getInteger(R.integer.settings_beacon_trigger_distance_default_m));
         mBinding.seekBeaconTriggerDistanceValue.setText(savedDistance+"m");
