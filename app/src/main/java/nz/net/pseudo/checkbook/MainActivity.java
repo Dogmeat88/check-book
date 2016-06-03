@@ -49,6 +49,7 @@ import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
+import org.altbeacon.beacon.utils.UrlBeaconUrlCompressor;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -104,7 +105,6 @@ public class MainActivity extends AppCompatActivity
     private Beacon currentBeacon;
     private boolean beaconOverride;
     private CountDownTimer beaconOverrideCountdownTimer;
-    private Map<String, String> beaconResourceMap;
     private boolean bluetoothEnabled;
 
 
@@ -130,8 +130,6 @@ public class MainActivity extends AppCompatActivity
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
         credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
-
-        beaconResourceMap = AppUtils.getHashMapResource(this, R.xml.beacon_resource_map);
 
         beaconOverride = false;
 
@@ -395,11 +393,11 @@ public class MainActivity extends AppCompatActivity
                 , getResources().getInteger(R.integer.settings_beacon_scan_rate_default_ms)));
 
         // Detect the main identifier (UID) frame:
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=00,p:3-3:-41,i:4-13,i:14-19"));
+        //beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=00,p:3-3:-41,i:4-13,i:14-19"));
         // Detect the telemetry (TLM) frame:
-        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("x,s:0-1=feaa,m:2-2=20,d:3-3,d:4-5,d:6-7,d:8-11,d:12-15"));
+        //beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("x,s:0-1=feaa,m:2-2=20,d:3-3,d:4-5,d:6-7,d:8-11,d:12-15"));
         // Detect the URL frame:
-        //beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-20v"));
+        beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-20v"));
 
         beaconManager.bind(this);
     }
@@ -763,9 +761,10 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        for (Beacon beacon: beaconList) {
-            if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x00) {
-                if(beaconResourceMap.containsKey(beacon.getId2().toString())) {
+        for (Beacon beacon: beacons) {
+            if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x10) {
+                if(AppUtils.findResourceById(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources()
+                        , AppUtils.parseUrl(UrlBeaconUrlCompressor.uncompress(beacon.getId1().toByteArray())))!=null) {
                     this.currentBeacon = beacon;
                     break;
                 }
@@ -780,20 +779,20 @@ public class MainActivity extends AppCompatActivity
     private void updateBeaconResource(){
         if(    currentBeacon!=null
             && !beaconOverride
-            && currentBeacon.getDistance() <= getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY, getResources().getInteger(R.integer.settings_beacon_trigger_distance_default_m))){
+            && currentBeacon.getDistance() <= getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY
+                , getResources().getInteger(R.integer.settings_beacon_trigger_distance_default_m))){
 
             //Display
-//            runOnUiThread(new Runnable() {
-//                public void run() {
-//                    mBinding.beaconInformational.setText(currentBeacon.getDistance()+"m");
-//                    mBinding.beaconInformational.setVisibility(View.VISIBLE);
-//                }
-//            });
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    mBinding.beaconInformational.setText(currentBeacon.getDistance()+"m");
+                    mBinding.beaconInformational.setVisibility(View.VISIBLE);
+                }
+            });
 
-
-            String beaconEmail = beaconResourceMap.get(currentBeacon.getId2().toString());
-            if (selectedResource == null || !beaconEmail.equals(selectedResource.getResourceEmail())) {
-                final CalendarResource beaconResource = AppUtils.findResourceByEmail(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources(), beaconEmail);
+            String resourceId = AppUtils.parseUrl(UrlBeaconUrlCompressor.uncompress(currentBeacon.getId1().toByteArray()));
+            if (selectedResource == null || !resourceId.equalsIgnoreCase(selectedResource.getResourceId())) {
+                final CalendarResource beaconResource = AppUtils.findResourceById(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources(), resourceId);
                 if (beaconResource != null) {
                     runOnUiThread(new Runnable() {
                         public void run() {

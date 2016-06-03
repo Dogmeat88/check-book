@@ -111,6 +111,23 @@ public class AppUtils {
         return null;
     }
 
+    public static CalendarResource findResourceById(CalendarResources resources, String id){
+        for(CalendarResource resource : resources.getItems()){
+            if(resource.getResourceId().equalsIgnoreCase(id)){
+                return resource;
+            }
+        }
+        return null;
+    }
+
+    public static String parseUrl(String inUrl){
+        return inUrl
+                .replace("http://www.","")
+                .replace("https://www.","")
+                .replace("http://","")
+                .replace("https://","");
+    }
+
     public static Map<String,String> getHashMapResource(Context c, int hashMapResId) {
         Map<String,String> map = null;
         XmlResourceParser parser = c.getResources().getXml(hashMapResId);
