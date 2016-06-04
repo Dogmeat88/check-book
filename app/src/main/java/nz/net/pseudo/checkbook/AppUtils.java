@@ -33,6 +33,8 @@ public class AppUtils {
     public static final String QUICKBOOK_TITLE_KEY = "quickBookTitleKey";
     public static final String QUICKBOOK_DURATION_KEY = "quickBookDurationKey";
     public static final String BEACON_STATE_KEY = "beaconStateKey";
+    public static final String AUTO_REFRESH_STATE_KEY = "autoRefreshStateKey";
+    public static final String AUTO_REFRESH_RATE_KEY = "autoRefreshDurationKey";
     public static final String BEACON_OVERRIDE_DURATION_KEY = "beaconOverrideDurationKey";
     public static final String BEACON_TRIGGER_DISTANCE_KEY = "beaconTriggerDistanceKey";
     public static final String BEACON_SCAN_RATE_KEY = "beaconScanRateKey";

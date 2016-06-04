@@ -56,6 +56,7 @@
 
     <string name="settings_title">Settings</string>
     <string name="beacons_title">Beacons (beta)</string>
+    <string name="general_title">General</string>
     <string name="quickbook_title">Quick Book</string>
     <string name="resources_title">Resources</string>
     <string name="settings_refresh_resources_txt">Refresh the resource list from the server.</string>
@@ -66,10 +67,12 @@
     <string name="settings_event_duration_15min">15 Minutes</string>
     <string name="settings_event_duration_30min">30 Minutes</string>
     <string name="settings_beacon_toggle">Enable/Disable Beacon Feature</string>
+    <string name="settings_auto_refresh_toggle">Enable/Disable Event list Auto Refresh</string>
     <string name="settings_beacon_disabled">This feature is not available for this version of Android</string>
     <string name="settings_beacon_override_duration">Set the Beacon override duration in seconds</string>
     <string name="settings_beacon_distance">Set the Beacon trigger distance in metres</string>
     <string name="settings_beacon_scan_rate">Set the Beacon scan rate in seconds</string>
+    <string name="settings_auto_refresh_rate">Set the Auto Refresh rate in seconds</string>
     <string name="settings_beacon_scan_rate_label1">More \nResponsive</string>
     <string name="settings_beacon_scan_rate_label2">Better \nBattery</string>
 

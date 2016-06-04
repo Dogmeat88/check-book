@@ -74,6 +74,47 @@
             <View style="@style/horizontal_line" />
             <TextView
                 style="@style/text_heading"
+                android:text="@string/general_title"
+                android:gravity="center_horizontal"
+                />
+
+            <TextView
+                style="@style/text_content_link"
+                android:text="@string/settings_auto_refresh_toggle"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                />
+
+            <ToggleButton
+                android:id="@+id/settings_auto_refresh_toggle_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+            <TextView
+                style="@style/text_content_link"
+                android:text="@string/settings_auto_refresh_rate"
+                android:layout_marginTop="20dp"
+                />
+            <SeekBar
+                android:id="@+id/seek_auto_refresh_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:max="29"
+                android:focusableInTouchMode="true"
+                android:focusable="true"
+                />
+            <TextView
+                android:id="@+id/seek_auto_refresh_rate_value"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"/>
+
+            <View style="@style/horizontal_line" />
+            <TextView
+                style="@style/text_heading"
                 android:text="@string/beacons_title"
                 android:gravity="center_horizontal"
                 />

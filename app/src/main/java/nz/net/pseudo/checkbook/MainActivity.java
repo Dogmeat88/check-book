@@ -59,7 +59,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import nz.net.pseudo.checkbook.beacon.BeaconIface;
 import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
@@ -100,12 +99,15 @@ public class MainActivity extends AppCompatActivity
     private EventsListAdapter eventsListAdapter;
     private ActionBarDrawerToggle drawerToggle;
     private CalendarResource selectedResource;
+    private CountDownTimer autoRefreshCountdownTimer;
 
     private BeaconManager beaconManager;
     private Beacon currentBeacon;
     private boolean beaconOverride;
     private CountDownTimer beaconOverrideCountdownTimer;
     private boolean bluetoothEnabled;
+    private int beaconRefreshCount = 0;
+    private List<Beacon> beaconList;
 
 
     static public final int REQUEST_ACCOUNT_PICKER = 1000;
@@ -132,6 +134,8 @@ public class MainActivity extends AppCompatActivity
         credential = GoogleAccountCredential.usingOAuth2(getApplicationContext(), Arrays.asList(SCOPES)).setBackOff(new ExponentialBackOff());
 
         beaconOverride = false;
+
+        beaconList = new ArrayList<>();
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,                  /* host Activity */
@@ -390,12 +394,8 @@ public class MainActivity extends AppCompatActivity
         beaconManager = BeaconManager.getInstanceForApplication(this);
 
         beaconManager.setForegroundScanPeriod(getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_SCAN_RATE_KEY
-                , getResources().getInteger(R.integer.settings_beacon_scan_rate_default_ms)));
+                , (getResources().getInteger(R.integer.settings_beacon_scan_rate_default_ms)/2)));
 
-        // Detect the main identifier (UID) frame:
-        //beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=00,p:3-3:-41,i:4-13,i:14-19"));
-        // Detect the telemetry (TLM) frame:
-        //beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("x,s:0-1=feaa,m:2-2=20,d:3-3,d:4-5,d:6-7,d:8-11,d:12-15"));
         // Detect the URL frame:
         beaconManager.getBeaconParsers().add(new BeaconParser().setBeaconLayout("s:0-1=feaa,m:2-2=10,p:3-3:-41,i:4-20v"));
 
@@ -406,6 +406,13 @@ public class MainActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         setBeaconEnabled(false);
+        if(beaconOverrideCountdownTimer!=null){
+            beaconOverrideCountdownTimer.onFinish();
+            beaconOverrideCountdownTimer.cancel();
+        }
+        if(autoRefreshCountdownTimer!=null){
+            autoRefreshCountdownTimer.cancel();
+        }
     }
 
     @Override
@@ -415,6 +422,7 @@ public class MainActivity extends AppCompatActivity
             beaconManager.bind(this);
         }
         parseIntent();
+        autoRefreshInit();
     }
 
     @Override
@@ -751,27 +759,34 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        List<Beacon> beaconList = new ArrayList(beacons);
-        //sort the beacons by distance from closest to farthest
-        Collections.sort(beaconList ,new Comparator<Beacon>(){
-            @Override
-            public int compare(final Beacon lhs,Beacon rhs) {
-                return Double.compare(lhs.getDistance(), rhs.getDistance());
-            }
-        });
+        beaconList.addAll(beacons);
+        if(this.beaconRefreshCount == 0) {
+            this.beaconRefreshCount++;
+        }else{
 
+            //sort the beacons by distance from closest to farthest
+            Collections.sort(beaconList, new Comparator<Beacon>() {
+                @Override
+                public int compare(final Beacon lhs, Beacon rhs) {
+                    return Double.compare(lhs.getDistance(), rhs.getDistance());
+                }
+            });
 
-        for (Beacon beacon: beacons) {
-            if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x10) {
-                if(AppUtils.findResourceById(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources()
-                        , AppUtils.parseUrl(UrlBeaconUrlCompressor.uncompress(beacon.getId1().toByteArray())))!=null) {
-                    this.currentBeacon = beacon;
-                    break;
+            for (Beacon beacon: beacons) {
+                if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x10) {
+                    if(AppUtils.findResourceById(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources()
+                            , AppUtils.parseUrl(UrlBeaconUrlCompressor.uncompress(beacon.getId1().toByteArray())))!=null) {
+                        this.currentBeacon = beacon;
+                        break;
+                    }
                 }
             }
-        }
 
-        updateBeaconResource();
+            this.beaconRefreshCount = 0;
+            this.beaconList.clear();
+
+            updateBeaconResource();
+        }
 
     }
 
@@ -832,9 +847,32 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 public void onFinish() {
-                    Log.v(TAG, "CountDownTimer.onFinish()");
+                    Log.v(TAG, "suspendBeacon.onFinish()");
                     beaconOverride = false;
                     mBinding.beaconInformational.setVisibility(View.INVISIBLE);
+                }
+            }.start();
+        }
+    }
+
+
+    public void autoRefreshInit() {
+
+        if(autoRefreshCountdownTimer!=null){
+            autoRefreshCountdownTimer.cancel();
+        }
+
+        if(getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.AUTO_REFRESH_STATE_KEY, false)) {
+
+            autoRefreshCountdownTimer = new CountDownTimer(getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.AUTO_REFRESH_RATE_KEY
+                    , getResources().getInteger(R.integer.settings_auto_refresh_duration_default_ms)), 1000) {
+
+                public void onTick(long millisUntilFinished){}
+
+                public void onFinish() {
+                    Log.d(TAG, "autoRefresh.onFinish()... refreshing");
+                    onRefresh();
+                    start();
                 }
             }.start();
         }

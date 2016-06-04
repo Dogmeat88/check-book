@@ -112,6 +112,44 @@ public class SettingsDialogueFragment extends DialogFragment{
         });
 
 
+        mBinding.settingsAutoRefreshToggleButton.setChecked(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.AUTO_REFRESH_STATE_KEY, false));
+
+        mBinding.settingsAutoRefreshToggleButton.setOnCheckedChangeListener(
+                new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        getActivity().getPreferences(Context.MODE_PRIVATE).edit().putBoolean(AppUtils.AUTO_REFRESH_STATE_KEY, isChecked).commit();
+                        eventsListImpl.autoRefreshInit();
+                    }
+                }
+        );
+
+
+        int savedAutoRefreshRate = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.AUTO_REFRESH_RATE_KEY
+                , getResources().getInteger(R.integer.settings_auto_refresh_duration_default_ms))/60000;
+        mBinding.seekAutoRefreshRateValue.setText(savedAutoRefreshRate+"m");
+        mBinding.seekAutoRefreshRate.setProgress(savedAutoRefreshRate);
+        mBinding.seekAutoRefreshRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mBinding.seekAutoRefreshRateValue.setText((progress+1)+"m");
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.AUTO_REFRESH_RATE_KEY, (seekBar.getProgress() + 1) * 60000).commit();
+                if(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.AUTO_REFRESH_STATE_KEY, false)) {
+                    eventsListImpl.autoRefreshInit();
+                }
+            }
+        });
+
+
 
         mBinding.settingsBeaconToggleButton.setChecked(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false));
 
