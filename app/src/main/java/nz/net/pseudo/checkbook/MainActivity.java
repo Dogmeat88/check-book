@@ -772,7 +772,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
-            for (Beacon beacon: beacons) {
+            for (Beacon beacon: beaconList) {
                 if (beacon.getServiceUuid() == 0xfeaa && beacon.getBeaconTypeCode() == 0x10) {
                     if(AppUtils.findResourceById(((ResourceFilter) resourceListAdapter.getFilter()).getCalendarResources()
                             , AppUtils.parseUrl(UrlBeaconUrlCompressor.uncompress(beacon.getId1().toByteArray())))!=null) {
