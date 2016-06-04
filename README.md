@@ -12,9 +12,9 @@ Beacons are used to automatically identify rooms and display it's events. Beacon
 The resource ID can be found in the Google Apps admin console.
 Some example programmed URLs are as follows:
 
-```http://R34```
+http://R34
 
-```http://-186627```
+http://-186627
 
 
 Screenshots: 
