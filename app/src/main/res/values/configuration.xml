@@ -18,4 +18,7 @@
     <string name="event_primary_email">primary</string>
     <string name="event_id_key">cbid</string>
 
+    <string name="unit_symbol_seconds">%1$ss</string>
+    <string name="unit_symbol_minutes">%1$sm</string>
+
 </resources>

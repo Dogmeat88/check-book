@@ -21,10 +21,10 @@ import nz.net.pseudo.checkbook.R;
  */
 public class EventsListAsyncTask extends AsyncTask<Void, Void, Events> {
     private final String TAG = this.getClass().getSimpleName();
-    private Calendar mCalendar;
-    private EventsListIface eventsListImpl;
-    private String calendarResourceId;
-    private Context context;
+    private final Calendar mCalendar;
+    private final EventsListIface eventsListImpl;
+    private final String calendarResourceId;
+    private final Context context;
 
     public EventsListAsyncTask(Context context, GoogleAccountCredential credential, EventsListIface eventsListImpl, String calendarResourceId) {
         this.eventsListImpl=eventsListImpl;

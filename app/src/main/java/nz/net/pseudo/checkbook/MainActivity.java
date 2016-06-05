@@ -61,6 +61,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import nz.net.pseudo.checkbook.beacon.BeaconIface;
+import nz.net.pseudo.checkbook.beacon.BeaconSettingsFragment;
 import nz.net.pseudo.checkbook.databinding.ActivityMainBinding;
 import nz.net.pseudo.checkbook.event.EventBookAsyncTask;
 import nz.net.pseudo.checkbook.event.EventBookIface;
@@ -109,15 +110,15 @@ public class MainActivity extends AppCompatActivity
     private int beaconRefreshCount = 0;
     private List<Beacon> beaconList;
 
-
-    static public final int REQUEST_ACCOUNT_PICKER = 1000;
+    private static final int REQUEST_ACCOUNT_PICKER = 1000;
     static public final int REQUEST_AUTHORIZATION = 1001;
     static public final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static public final int PERMISSIONS = 1003;
+    private static final int PERMISSIONS = 1003;
 
     private static final String PREF_ACCOUNT_NAME_KEY = "accountNameKey";
-    private static final String FRAG_SETTINGS_KEY = "fragSettingsKey";
-    private static final String FRAG_ABOUt_KEY = "fragAboutKey";
+    private static final String FRAG_GENERAL_SETTINGS_KEY = "fragGeneralSettingsKey";
+    private static final String FRAG_BEACON_SETTINGS_KEY = "fragBeaconSettingsKey";
+    private static final String FRAG_ABOUT_KEY = "fragAboutKey";
 
 
     private static final String[] SCOPES = {
@@ -227,14 +228,14 @@ public class MainActivity extends AppCompatActivity
         }else if(event.getCreator().getEmail().equals(credential.getSelectedAccountName())){
             Log.d(TAG, "User's event");
 
-            String descString = "";
+            String descString;
             if(event.getDescription()!=null) {
                 descString = event.getDescription();
             }else{
                 if(event.getCreator().getDisplayName()!=null) {
-                    descString =event.getCreator().getDisplayName();
+                    descString = event.getCreator().getDisplayName();
                 }else{
-                    descString =event.getCreator().getEmail();
+                    descString = event.getCreator().getEmail();
                 }
             }
 
@@ -333,11 +334,14 @@ public class MainActivity extends AppCompatActivity
         // true, then it has handled the app icon touch event
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
-        } else if(item.getItemId()==R.id.action_settings){
-            new SettingsDialogueFragment().show(getSupportFragmentManager(), FRAG_SETTINGS_KEY);
+        } else if(item.getItemId()==R.id.action_general_settings){
+            new GeneralSettingsFragment().show(getSupportFragmentManager(), FRAG_GENERAL_SETTINGS_KEY);
+        } else if(item.getItemId()==R.id.action_beacon_settings){
+            new BeaconSettingsFragment().show(getSupportFragmentManager(), FRAG_BEACON_SETTINGS_KEY);
         } else if(item.getItemId()==R.id.action_about){
-            new AboutDialogueFragment().show(getSupportFragmentManager(), FRAG_ABOUt_KEY);
+            new AboutFragment().show(getSupportFragmentManager(), FRAG_ABOUT_KEY);
         }
+
 
         return super.onOptionsItemSelected(item);
     }
@@ -598,7 +602,7 @@ public class MainActivity extends AppCompatActivity
      * @param connectionStatusCode code describing the presence (or lack of)
      *     Google Play Services on this device.
      */
-    void showGooglePlayServicesAvailabilityErrorDialog(
+    private void showGooglePlayServicesAvailabilityErrorDialog(
             final int connectionStatusCode) {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         Dialog dialog = apiAvailability.getErrorDialog(
@@ -800,7 +804,7 @@ public class MainActivity extends AppCompatActivity
             //Display
             runOnUiThread(new Runnable() {
                 public void run() {
-                    mBinding.beaconInformational.setText(currentBeacon.getDistance()+"m");
+                    mBinding.beaconInformational.setText(getString(R.string.unit_symbol_minutes,currentBeacon.getDistance()));
                     mBinding.beaconInformational.setVisibility(View.VISIBLE);
                 }
             });
@@ -840,10 +844,10 @@ public class MainActivity extends AppCompatActivity
             }
 
             beaconOverrideCountdownTimer = new CountDownTimer(getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY
-                    , getResources().getInteger(R.integer.settings_beacon_override_duration_default_ms)), 1000) {
+                    , getResources().getInteger(R.integer.settings_beacon_override_duration_default_ms)), AppUtils.SEC_IN_MS) {
 
                 public void onTick(long millisUntilFinished) {
-                    mBinding.beaconInformational.setText(getString(R.string.beacon_override_prefix) + String.valueOf(millisUntilFinished / 1000));
+                    mBinding.beaconInformational.setText(getString(R.string.beacon_override_prefix,String.valueOf(millisUntilFinished / AppUtils.SEC_IN_MS)));
                 }
 
                 public void onFinish() {
@@ -865,7 +869,7 @@ public class MainActivity extends AppCompatActivity
         if(getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.AUTO_REFRESH_STATE_KEY, false)) {
 
             autoRefreshCountdownTimer = new CountDownTimer(getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.AUTO_REFRESH_RATE_KEY
-                    , getResources().getInteger(R.integer.settings_auto_refresh_duration_default_ms)), 1000) {
+                    , getResources().getInteger(R.integer.settings_auto_refresh_duration_default_ms)), AppUtils.SEC_IN_MS) {
 
                 public void onTick(long millisUntilFinished){}
 

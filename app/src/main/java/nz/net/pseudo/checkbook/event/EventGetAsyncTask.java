@@ -21,11 +21,11 @@ import nz.net.pseudo.checkbook.R;
  */
 public class EventGetAsyncTask extends AsyncTask<Void, Void, Event> {
     private final String TAG = this.getClass().getSimpleName();
-    private Calendar mCalendar;
-    private EventGetIface eventGetImpl;
-    private String eventId;
-    private Context context;
-    private ProgressDialog progressDialog;
+    private final Calendar mCalendar;
+    private final EventGetIface eventGetImpl;
+    private final String eventId;
+    private final Context context;
+    private final ProgressDialog progressDialog;
 
 
     public EventGetAsyncTask(

@@ -7,22 +7,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import nz.net.pseudo.checkbook.databinding.AboutDialogueFragmentBinding;
+import nz.net.pseudo.checkbook.databinding.AboutFragmentBinding;
 import nz.net.pseudo.checkbook.event.EventsListIface;
 import nz.net.pseudo.checkbook.resource.ResourceListIface;
 
 /**
  * Created by i on 10/05/16.
+ * Information about CheckBook
  */
-public class AboutDialogueFragment extends DialogFragment{
-    AboutDialogueFragmentBinding mBinding;
-    ResourceListIface resourceListImpl;
-    EventsListIface eventsListImpl;
+public class AboutFragment extends DialogFragment{
+    private AboutFragmentBinding mBinding;
+    private ResourceListIface resourceListImpl;
+    private EventsListIface eventsListImpl;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.about_dialogue_fragment, container, false);
-        mBinding = AboutDialogueFragmentBinding.bind(view);
+        View view = inflater.inflate(R.layout.about_fragment, container, false);
+        mBinding = AboutFragmentBinding.bind(view);
 
         mBinding.aboutContentTextview.setMovementMethod(LinkMovementMethod.getInstance());
 

@@ -21,11 +21,11 @@ import nz.net.pseudo.checkbook.R;
  */
 public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
     private final String TAG = this.getClass().getSimpleName();
-    private Calendar mCalendar;
-    private EventUnbookIface eventUnbookImpl;
-    private Event unbookEvent;
-    private Context context;
-    private ProgressDialog progressDialog;
+    private final Calendar mCalendar;
+    private final EventUnbookIface eventUnbookImpl;
+    private final Event unbookEvent;
+    private final Context context;
+    private final ProgressDialog progressDialog;
 
     public EventUnbookAsyncTask(
               Context context

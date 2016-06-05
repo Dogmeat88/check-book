@@ -1,7 +1,6 @@
 package nz.net.pseudo.checkbook;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.text.Editable;
@@ -14,18 +13,19 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 
 import nz.net.pseudo.checkbook.beacon.BeaconIface;
-import nz.net.pseudo.checkbook.databinding.SettingsDialogueFragmentBinding;
+import nz.net.pseudo.checkbook.databinding.GeneralSettingsFragmentBinding;
 import nz.net.pseudo.checkbook.event.EventsListIface;
 import nz.net.pseudo.checkbook.resource.ResourceListIface;
 
 /**
  * Created by i on 10/05/16.
+ * General settings management for the app
  */
-public class SettingsDialogueFragment extends DialogFragment{
-    SettingsDialogueFragmentBinding mBinding;
-    ResourceListIface resourceListImpl;
-    EventsListIface eventsListImpl;
-    BeaconIface beaconImpl;
+public class GeneralSettingsFragment extends DialogFragment{
+    private GeneralSettingsFragmentBinding mBinding;
+    private ResourceListIface resourceListImpl;
+    private EventsListIface eventsListImpl;
+    private BeaconIface beaconImpl;
 
     @Override
     public void onAttach(Context context) {
@@ -42,8 +42,8 @@ public class SettingsDialogueFragment extends DialogFragment{
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.settings_dialogue_fragment, container, false);
-        mBinding = SettingsDialogueFragmentBinding.bind(view);
+        View view = inflater.inflate(R.layout.general_settings_fragment, container, false);
+        mBinding = GeneralSettingsFragmentBinding.bind(view);
 
 
         int quickBookDuration = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.QUICKBOOK_DURATION_KEY, getResources().getInteger(R.integer.settings_event_duration_15min));
@@ -126,13 +126,13 @@ public class SettingsDialogueFragment extends DialogFragment{
 
 
         int savedAutoRefreshRate = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.AUTO_REFRESH_RATE_KEY
-                , getResources().getInteger(R.integer.settings_auto_refresh_duration_default_ms))/60000;
-        mBinding.seekAutoRefreshRateValue.setText(savedAutoRefreshRate+"m");
+                , getResources().getInteger(R.integer.settings_auto_refresh_duration_default_ms))/AppUtils.MIN_IN_MS;
+        mBinding.seekAutoRefreshRateValue.setText(getString(R.string.unit_symbol_minutes,savedAutoRefreshRate));
         mBinding.seekAutoRefreshRate.setProgress(savedAutoRefreshRate);
         mBinding.seekAutoRefreshRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mBinding.seekAutoRefreshRateValue.setText((progress+1)+"m");
+                mBinding.seekAutoRefreshRateValue.setText(getString(R.string.unit_symbol_minutes,(progress+1)));
             }
 
             @Override
@@ -142,99 +142,10 @@ public class SettingsDialogueFragment extends DialogFragment{
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.AUTO_REFRESH_RATE_KEY, (seekBar.getProgress() + 1) * 60000).commit();
+                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.AUTO_REFRESH_RATE_KEY, (seekBar.getProgress() + 1) * AppUtils.MIN_IN_MS).commit();
                 if(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.AUTO_REFRESH_STATE_KEY, false)) {
                     eventsListImpl.autoRefreshInit();
                 }
-            }
-        });
-
-
-
-        mBinding.settingsBeaconToggleButton.setChecked(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false));
-
-        //Disable beacon support if not available
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            mBinding.settingsBeaconToggleButton.setEnabled(false);
-            mBinding.settingsBeaconDisabled.setVisibility(View.VISIBLE);
-        }
-
-        mBinding.settingsBeaconToggleButton.setOnCheckedChangeListener(
-            new CompoundButton.OnCheckedChangeListener() {
-               @Override
-               public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                   getActivity().getPreferences(Context.MODE_PRIVATE).edit().putBoolean(AppUtils.BEACON_STATE_KEY, isChecked).commit();
-                   beaconImpl.setBeaconEnabled(isChecked);
-               }
-           }
-        );
-
-
-        int savedScanRate = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_SCAN_RATE_KEY
-                , getResources().getInteger(R.integer.settings_beacon_scan_rate_default_ms))/1000;
-        mBinding.seekBeaconScanRateValue.setText(savedScanRate+"s");
-        mBinding.seekBeaconScanRate.setProgress(savedScanRate);
-        mBinding.seekBeaconScanRate.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mBinding.seekBeaconScanRateValue.setText((progress+1)+"s");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.BEACON_SCAN_RATE_KEY, (seekBar.getProgress() + 1) * 1000).commit();
-                if(getActivity().getPreferences(Context.MODE_PRIVATE).getBoolean(AppUtils.BEACON_STATE_KEY, false)) {
-                    beaconImpl.setBeaconEnabled(false);
-                    beaconImpl.setBeaconEnabled(true);
-                }
-            }
-        });
-
-
-        int savedOverrideDuration = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY
-                , getResources().getInteger(R.integer.settings_beacon_override_duration_default_ms))/1000;
-        mBinding.seekBeaconOverrideDurationValue.setText(savedOverrideDuration+"s");
-        mBinding.seekBeaconOverrideDuration.setProgress(savedOverrideDuration);
-        mBinding.seekBeaconOverrideDuration.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mBinding.seekBeaconOverrideDurationValue.setText((progress+1)+"s");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.BEACON_OVERRIDE_DURATION_KEY, (seekBar.getProgress()+1)*1000).commit();
-            }
-        });
-
-
-        int savedDistance = getActivity().getPreferences(Context.MODE_PRIVATE).getInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY, getActivity().getResources().getInteger(R.integer.settings_beacon_trigger_distance_default_m));
-        mBinding.seekBeaconTriggerDistanceValue.setText(savedDistance+"m");
-        mBinding.seekBeaconTriggerDistance.setProgress(savedDistance);
-        mBinding.seekBeaconTriggerDistance.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mBinding.seekBeaconTriggerDistanceValue.setText((progress+1)+"m");
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                getActivity().getPreferences(Context.MODE_PRIVATE).edit().putInt(AppUtils.BEACON_TRIGGER_DISTANCE_KEY, seekBar.getProgress()+1).commit();
             }
         });
 

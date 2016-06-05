@@ -19,15 +19,15 @@ import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 30/04/16.
+ * Parse the returned calendar events list and add quickbook events
  */
 public class EventsParser {
 
-    private final int ONE_MIN_IN_MS = 60000;
     private int quickBookDurationMs;
-    private final int QUICK_BOOK_BUFFER_MS = 60*ONE_MIN_IN_MS;
+    private final int QUICK_BOOK_BUFFER_MS = AppUtils.HOUR_IN_MS;
 
 
-    private Context context;
+    private final Context context;
     private CalendarResource selectedResource;
 
     public EventsParser(Context context) {

@@ -13,7 +13,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="0.3"
-        android:text="No Title"
+        android:text="@string/event_default_summary"
         />
 
     <TextView
@@ -28,8 +28,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="0.2"
-        android:gravity="right"
-        android:text="01:00\n02:00"
+        android:gravity="end"
         />
 
 

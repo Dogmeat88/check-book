@@ -27,10 +27,10 @@ import nz.net.pseudo.checkbook.R;
  */
 public class ResourceListAsyncTask extends AsyncTask<Void, Void, CalendarResources> {
     private final String TAG = this.getClass().getSimpleName();
-    private Directory mService;
-    private ResourceListIface resourceListImpl;
-    private ProgressDialog progressDialog;
-    private Context context;
+    private final Directory mService;
+    private final ResourceListIface resourceListImpl;
+    private final ProgressDialog progressDialog;
+    private final Context context;
     private Exception mLastError = null;
 
     public ResourceListAsyncTask(Context context, GoogleAccountCredential credential, ResourceListIface resourceListImpl) {
@@ -77,7 +77,7 @@ public class ResourceListAsyncTask extends AsyncTask<Void, Void, CalendarResourc
     @Override
     protected void onCancelled() {
         //If fail due to permissions, then request them
-        progressDialog.hide();;
+        progressDialog.hide();
         if (mLastError != null) {
             if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                 GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();

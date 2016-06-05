@@ -10,10 +10,11 @@ import java.util.List;
 
 /**
  * Created by i on 5/05/16.
+ * Filter the resources shown to the user
  */
 public class ResourceFilter extends Filter {
     private CalendarResources calendarResources;
-    private ResourceListAdapter resourceListAdapter;
+    private final ResourceListAdapter resourceListAdapter;
 
     public ResourceFilter(CalendarResources calendarResources, ResourceListAdapter resourceListAdapter) {
         this.calendarResources = calendarResources;

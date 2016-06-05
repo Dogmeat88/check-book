@@ -12,6 +12,7 @@
         android:id="@+id/resource_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:contentDescription="@string/resource_type_icon_description"
         />
 
     <TextView

@@ -22,13 +22,13 @@ import nz.net.pseudo.checkbook.R;
  */
 public class EventBookAsyncTask extends AsyncTask<Void, Void, Event> {
     private final String TAG = this.getClass().getSimpleName();
-    private Calendar mCalendar;
-    private EventBookIface eventBookImpl;
-    private String calendarResourceId;
-    private Event bookEvent;
-    private Context context;
-    private int position;
-    private ProgressDialog progressDialog;
+    private final Calendar mCalendar;
+    private final EventBookIface eventBookImpl;
+    private final String calendarResourceId;
+    private final Event bookEvent;
+    private final Context context;
+    private final int position;
+    private final ProgressDialog progressDialog;
 
 
     public EventBookAsyncTask(

@@ -22,12 +22,13 @@ import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 25/04/16.
+ * Custom list adapter for the calendar events list
  */
 public class EventsListAdapter extends BaseAdapter {
-    private Context context;
+    private final Context context;
     private Events events;
-    private SimpleDateFormat systemTimeFormat;
-    private GoogleAccountCredential credential;
+    private final SimpleDateFormat systemTimeFormat;
+    private final GoogleAccountCredential credential;
 
     public EventsListAdapter(Context context, Events events, GoogleAccountCredential credential) {
         this.context=context;
@@ -102,8 +103,7 @@ public class EventsListAdapter extends BaseAdapter {
         Long itemDuration = (endDateTime.getValue()-startDateTime.getValue())/20000;
         //Scale based on phones DPI
         float scale = context.getResources().getDisplayMetrics().density;
-        int itemHeightPixels = (int) (itemDuration * scale + 0.5f);
-        eventContainerLinearLayout.getLayoutParams().height = itemHeightPixels;
+        eventContainerLinearLayout.getLayoutParams().height = (int) (itemDuration * scale + 0.5f);
 
         return convertView;
     }

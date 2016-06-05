@@ -27,9 +27,10 @@ import java.util.TimeZone;
 
 /**
  * Created by i on 1/05/16.
+ * Commaon App utilities and constants
  */
 public class AppUtils {
-    public static final String RESOURCES_KEY = "ResourcesKey";
+    private static final String RESOURCES_KEY = "ResourcesKey";
     public static final String QUICKBOOK_TITLE_KEY = "quickBookTitleKey";
     public static final String QUICKBOOK_DURATION_KEY = "quickBookDurationKey";
     public static final String BEACON_STATE_KEY = "beaconStateKey";
@@ -41,9 +42,12 @@ public class AppUtils {
     public static final String EVENT_EMAIL_INTENT_KEY = "eventEmailIntentKey";
     public static final String EVENT_EMAIL_CONTENT_KEY = "eventEmailContentKey";
 
+    public static final int SEC_IN_MS = 1000;
+    public static final int MIN_IN_MS = 60000;
+    public static final int HOUR_IN_MS = 3600000;
+
+
     /**
-     *
-     * @param context
      * @return Localised datetime formatter with device's timezone and preferred datetime format
      */
     public static SimpleDateFormat getLocalisedDateTimeFormatter(Context context){
@@ -128,51 +132,5 @@ public class AppUtils {
                 .replace("https://www.","")
                 .replace("http://","")
                 .replace("https://","");
-    }
-
-    public static Map<String,String> getHashMapResource(Context c, int hashMapResId) {
-        Map<String,String> map = null;
-        XmlResourceParser parser = c.getResources().getXml(hashMapResId);
-
-        String key = null, value = null;
-
-        try {
-            int eventType = parser.getEventType();
-
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_DOCUMENT) {
-                    Log.d("utils","Start document");
-                } else if (eventType == XmlPullParser.START_TAG) {
-                    if (parser.getName().equals("map")) {
-                        boolean isLinked = parser.getAttributeBooleanValue(null, "linked", false);
-
-                        map = isLinked ? new LinkedHashMap<String, String>() : new HashMap<String, String>();
-                    } else if (parser.getName().equals("entry")) {
-                        key = parser.getAttributeValue(null, "key");
-
-                        if (null == key) {
-                            parser.close();
-                            return null;
-                        }
-                    }
-                } else if (eventType == XmlPullParser.END_TAG) {
-                    if (parser.getName().equals("entry")) {
-                        map.put(key, value);
-                        key = null;
-                        value = null;
-                    }
-                } else if (eventType == XmlPullParser.TEXT) {
-                    if (null != key) {
-                        value = parser.getText();
-                    }
-                }
-                eventType = parser.next();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return map;
     }
 }

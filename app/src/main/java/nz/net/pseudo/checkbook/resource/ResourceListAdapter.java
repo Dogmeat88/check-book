@@ -18,10 +18,11 @@ import nz.net.pseudo.checkbook.R;
 
 /**
  * Created by i on 25/04/16.
+ * Custom list adapter for resources
  */
 public class ResourceListAdapter extends BaseAdapter implements Filterable {
     private CalendarResources filteredCalendarResources;
-    private ResourceFilter resourceFilter;
+    private final ResourceFilter resourceFilter;
 
     public ResourceListAdapter(CalendarResources calendarResources) {
         this.filteredCalendarResources=new CalendarResources();
