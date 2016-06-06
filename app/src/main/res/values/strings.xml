@@ -25,6 +25,10 @@
     <string name="events_loading_error_content">There was an error loading Events. Please try again.</string>
     <string name="resource_events_default_title">No Resource Selected</string>
 
+    <string name="resource_availability_loading_error_title">Resource Availability Error</string>
+    <string name="resource_availability_loading_error_content">There was an error checking resource availability</string>
+    <string name="resource_availability_too_many">Too many resources selected. Please apply filter any try again.</string>
+
     <string name="event_book_confirm_title">Quick Book</string>
     <string name="event_book_confirm_content">Book new event from %1$s to %2$s \nEnter event description(Optional)</string>
     <string name="event_book_confirm_edittext_hint">Ad hoc</string>
@@ -85,8 +89,6 @@
 
     <string name="about_title">About Check, Book</string>
     <string name="about_content"><b>Copyright:</b> Kenneth Dixon 2016\n\n<b>Licence:</b> <a href="http://www.apache.org/licenses/LICENSE-2.0.html">Apache License Version 2.0</a>  \n\n<b>Source and Info:</b> <a href="https://github.com/Dogmeat88/check-book">GitHub</a></string>
-
-
 
     <string name="okay_btn">Okay</string>
     <string name="close_btn">Close</string>

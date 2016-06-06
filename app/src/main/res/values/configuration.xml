@@ -21,4 +21,8 @@
     <string name="unit_symbol_seconds">%1$ss</string>
     <string name="unit_symbol_minutes">%1$sm</string>
 
+    <string name="meeting_room_type_text">Room</string>
+
+    <string name="resource_availability_error_key">tooManyCalendarsRequested</string>
+
 </resources>

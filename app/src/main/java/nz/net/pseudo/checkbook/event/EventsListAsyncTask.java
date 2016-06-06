@@ -13,6 +13,9 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Events;
 
+import java.util.Date;
+
+import nz.net.pseudo.checkbook.AppUtils;
 import nz.net.pseudo.checkbook.R;
 
 /**
@@ -41,17 +44,18 @@ public class EventsListAsyncTask extends AsyncTask<Void, Void, Events> {
     @Override
     protected Events doInBackground(Void... params) {
         try {
-            java.util.Calendar startDateLimit = java.util.Calendar.getInstance();
-            startDateLimit.add(java.util.Calendar.MINUTE, -15);
 
-            java.util.Calendar endDateLimit = java.util.Calendar.getInstance();
-            endDateLimit.add(java.util.Calendar.HOUR, +12);
+            Date startDateLimit = new Date();
+            startDateLimit.setTime(startDateLimit.getTime()-AppUtils.THIRTY_MIN_IN_MS);
+
+            Date endDateLimit = new Date();
+            endDateLimit.setTime(endDateLimit.getTime()+AppUtils.TWELVE_HOURS_IN_MS);
 
             return mCalendar
                     .events()
                     .list(calendarResourceId)
-                    .setTimeMin(new DateTime(startDateLimit.getTime()))
-                    .setTimeMax(new DateTime(endDateLimit.getTime()))
+                    .setTimeMin(new DateTime(startDateLimit))
+                    .setTimeMax(new DateTime(endDateLimit))
                     .setSingleEvents(true)
                     .setOrderBy("startTime")
                     .execute();

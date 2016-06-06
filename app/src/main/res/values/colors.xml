@@ -18,4 +18,8 @@
 
     <color name="text_standard">#000000</color>
 
+    <color name="resource_availability_available">#00FF00</color>
+    <color name="resource_availability_unavailable">#FF0000</color>
+    <color name="resource_availability_unknown">#FFD80A</color>
+
 </resources>

@@ -40,8 +40,11 @@ import com.google.api.services.admin.directory.DirectoryScopes;
 import com.google.api.services.admin.directory.model.CalendarResource;
 import com.google.api.services.admin.directory.model.CalendarResources;
 import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.Error;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
+import com.google.api.services.calendar.model.FreeBusyCalendar;
+import com.google.api.services.calendar.model.FreeBusyResponse;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
@@ -58,7 +61,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import nz.net.pseudo.checkbook.beacon.BeaconIface;
 import nz.net.pseudo.checkbook.beacon.BeaconSettingsFragment;
@@ -73,6 +79,8 @@ import nz.net.pseudo.checkbook.event.EventsListAdapter;
 import nz.net.pseudo.checkbook.event.EventsListAsyncTask;
 import nz.net.pseudo.checkbook.event.EventsListIface;
 import nz.net.pseudo.checkbook.event.EventsParser;
+import nz.net.pseudo.checkbook.resource.ResourceAvailabilityAsyncTask;
+import nz.net.pseudo.checkbook.resource.ResourceAvailabilityIface;
 import nz.net.pseudo.checkbook.resource.ResourceFilter;
 import nz.net.pseudo.checkbook.resource.ResourceListAdapter;
 import nz.net.pseudo.checkbook.resource.ResourceListAsyncTask;
@@ -82,7 +90,9 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity
         implements EasyPermissions.PermissionCallbacks
-        , ResourceListIface, EventsListIface
+        , ResourceListIface
+        , EventsListIface
+        , ResourceAvailabilityIface
         , SwipeRefreshLayout.OnRefreshListener
         , SearchView.OnQueryTextListener
         , EventBookIface
@@ -143,7 +153,13 @@ public class MainActivity extends AppCompatActivity
                 mBinding.navDrawerLayout,         /* DrawerLayout object */
                 R.string.navigation_drawer_open,  /* "open drawer" description */
                 R.string.navigation_drawer_close  /* "close drawer" description */
-        );
+        ) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                refreshResourceAvailability();
+            }
+        };
         drawerToggle.setDrawerIndicatorEnabled(true);
         drawerToggle.syncState();
         mBinding.navDrawerLayout.addDrawerListener(drawerToggle);
@@ -153,7 +169,7 @@ public class MainActivity extends AppCompatActivity
 
         CalendarResources calendarResources = new CalendarResources();
         calendarResources.setItems(new ArrayList<CalendarResource>());
-        resourceListAdapter = new ResourceListAdapter(calendarResources);
+        resourceListAdapter = new ResourceListAdapter(this, calendarResources);
 
         mBinding.resourceSearchview.setOnQueryTextListener(this);
         mBinding.resourceList.setAdapter(resourceListAdapter);
@@ -162,7 +178,6 @@ public class MainActivity extends AppCompatActivity
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mBinding.navDrawerLayout.closeDrawer(GravityCompat.START);
                 suspendBeacon();
-
                 selectResource(((CalendarResource)parent.getItemAtPosition(position)));
             }
         });
@@ -181,7 +196,25 @@ public class MainActivity extends AppCompatActivity
                 processEvent(event, position);
             }
         });
+
+        mBinding.resourcesRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshResourceAvailability();
+            }
+        });
+
         init();
+    }
+
+    private void refreshResourceAvailability(){
+        mBinding.resourcesRefreshLayout.setRefreshing(true);
+        new ResourceAvailabilityAsyncTask(
+                MainActivity.this
+                , MainActivity.this.credential
+                , MainActivity.this
+                , resourceListAdapter.getFilteredCalendarResources()
+        ).execute();
     }
 
     private void processEvent(final Event event, final Integer position){
@@ -677,9 +710,18 @@ public class MainActivity extends AppCompatActivity
         processEvent(event, null);
     }
 
+    @Override
+    public void onResourceAvailabilitySuccess(FreeBusyResponse freeBusyResponse) {
+        mBinding.resourcesRefreshLayout.setRefreshing(false);
+        resourceListAdapter.setFreeBusyResponse(freeBusyResponse);
+        resourceListAdapter.notifyDataSetChanged();
+        AppUtils.checkResourceAvailabilityErrors(this, freeBusyResponse);
+    }
+
             @Override
     public void onFail(String title, String content) {
         mBinding.resourceEventsRefreshLayout.setRefreshing(false);
+        mBinding.resourcesRefreshLayout.setRefreshing(false);
         new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(content)

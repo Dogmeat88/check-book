@@ -2,9 +2,9 @@ package nz.net.pseudo.checkbook;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.XmlResourceParser;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonParser;
@@ -12,22 +12,24 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.admin.directory.model.CalendarResource;
 import com.google.api.services.admin.directory.model.CalendarResources;
-
-import org.xmlpull.v1.XmlPullParser;
+import com.google.api.services.calendar.model.Error;
+import com.google.api.services.calendar.model.FreeBusyCalendar;
+import com.google.api.services.calendar.model.FreeBusyResponse;
 
 import java.io.IOException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 /**
  * Created by i on 1/05/16.
- * Commaon App utilities and constants
+ * Common App utilities and constants
  */
 public class AppUtils {
     private static final String RESOURCES_KEY = "ResourcesKey";
@@ -44,6 +46,9 @@ public class AppUtils {
 
     public static final int SEC_IN_MS = 1000;
     public static final int MIN_IN_MS = 60000;
+    public static final int FIFTEEN_MIN_IN_MS = 900000;
+    public static final int THIRTY_MIN_IN_MS = 1800000;
+    public static final int TWELVE_HOURS_IN_MS = 43200000;
     public static final int HOUR_IN_MS = 3600000;
 
 
@@ -133,4 +138,25 @@ public class AppUtils {
                 .replace("http://","")
                 .replace("https://","");
     }
+
+    public static void checkResourceAvailabilityErrors(Context context, FreeBusyResponse freeBusyResponse){
+
+        Set<String> errorStringSet = new HashSet<>();
+
+        for (Map.Entry<String, FreeBusyCalendar> freeBusyCalendar : freeBusyResponse.getCalendars().entrySet()) {
+
+            List<Error> errorList = freeBusyCalendar.getValue().getErrors();
+            if(errorList!=null) {
+                for (Error error : errorList) {
+                    errorStringSet.add(error.getReason());
+                }
+            }
+        }
+
+        if(errorStringSet.contains(context.getString(R.string.resource_availability_error_key))){
+            Toast.makeText(context, context.getString(R.string.resource_availability_too_many), Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
 }
