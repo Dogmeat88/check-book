@@ -29,6 +29,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -40,10 +41,8 @@ import com.google.api.services.admin.directory.DirectoryScopes;
 import com.google.api.services.admin.directory.model.CalendarResource;
 import com.google.api.services.admin.directory.model.CalendarResources;
 import com.google.api.services.calendar.CalendarScopes;
-import com.google.api.services.calendar.model.Error;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
-import com.google.api.services.calendar.model.FreeBusyCalendar;
 import com.google.api.services.calendar.model.FreeBusyResponse;
 
 import org.altbeacon.beacon.Beacon;
@@ -61,10 +60,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import nz.net.pseudo.checkbook.beacon.BeaconIface;
 import nz.net.pseudo.checkbook.beacon.BeaconSettingsFragment;
@@ -273,9 +269,12 @@ public class MainActivity extends AppCompatActivity
             }
 
             if(event.getRecurringEventId()==null) {
+                final CheckBox notifyAttendeesCheckbox = (CheckBox) LayoutInflater.from(MainActivity.this).inflate(R.layout.event_unbook_confirm_checkbox, null).findViewById(R.id.event_unbook_confirm_checkbox);
+
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle(getString(R.string.event_unbook_confirm_title))
                         .setMessage(getString(R.string.event_unbook_confirm_content,descString,startDateString,endDateString))
+                        .setView(notifyAttendeesCheckbox)
                         .setCancelable(true)
                         .setPositiveButton(
                                 getString(R.string.okay_btn),
@@ -286,6 +285,7 @@ public class MainActivity extends AppCompatActivity
                                                 , MainActivity.this.credential
                                                 , MainActivity.this
                                                 , event
+                                                , notifyAttendeesCheckbox.isChecked()
                                         ).execute();
                                     }
                                 }

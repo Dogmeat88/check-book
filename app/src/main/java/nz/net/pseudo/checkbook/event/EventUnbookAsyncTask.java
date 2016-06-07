@@ -26,16 +26,19 @@ public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
     private final Event unbookEvent;
     private final Context context;
     private final ProgressDialog progressDialog;
+    private final boolean notifyAttendees;
 
     public EventUnbookAsyncTask(
               Context context
             , GoogleAccountCredential credential
             , EventUnbookIface eventUnbookImpl
             , Event unbookEvent
+            , boolean notifyAttendees
     ) {
         this.eventUnbookImpl = eventUnbookImpl;
         this.unbookEvent = unbookEvent;
         this.context=context;
+        this.notifyAttendees=notifyAttendees;
 
         progressDialog = new ProgressDialog(context);
         progressDialog.setTitle(R.string.progress_dialogue_title);
@@ -56,7 +59,7 @@ public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(Void... params) {
         try {
 
-            mCalendar.events().delete(context.getString(R.string.event_primary_email), this.unbookEvent.getId()).execute();
+            mCalendar.events().delete(context.getString(R.string.event_primary_email), this.unbookEvent.getId()).setSendNotifications(this.notifyAttendees).execute();
             return true;
 
         } catch (Exception e) {

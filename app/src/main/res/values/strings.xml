@@ -50,6 +50,7 @@
     <string name="event_unbook_error_content">There was an error unbooking this event. Please try again.</string>
     <string name="event_unbook_reoccurring_toast">This event is reoccurring, please use Google Calendar App to unbook</string>
     <string name="event_unbook_progress_content">Unbooking Event</string>
+    <string name="event_unbook_notify_checkbox_text">Notify Attendees</string>
 
     <string name="event_email_confirm_title">Email</string>
     <string name="event_email_confirm_content">Email %1$s regarding this event?</string>
