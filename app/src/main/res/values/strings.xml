@@ -27,7 +27,7 @@
 
     <string name="resource_availability_loading_error_title">Resource Availability Error</string>
     <string name="resource_availability_loading_error_content">There was an error checking resource availability</string>
-    <string name="resource_availability_too_many">Too many resources selected. Please apply filter any try again.</string>
+    <string name="resource_availability_too_many">Cannot determine resource availability because too many resources are selected.\nPlease refine filter any try again.</string>
 
     <string name="event_book_confirm_title">Quick Book</string>
     <string name="event_book_confirm_content">Book new event from %1$s to %2$s \nEnter event description(Optional)</string>

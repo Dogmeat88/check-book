@@ -154,7 +154,7 @@ public class AppUtils {
         }
 
         if(errorStringSet.contains(context.getString(R.string.resource_availability_error_key))){
-            Toast.makeText(context, context.getString(R.string.resource_availability_too_many), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, context.getString(R.string.resource_availability_too_many), Toast.LENGTH_LONG).show();
         }
 
     }
