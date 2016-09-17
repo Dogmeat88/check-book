@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.beacon;
+package nz.net.pseudo.cb.beacon;
 
 
 /**

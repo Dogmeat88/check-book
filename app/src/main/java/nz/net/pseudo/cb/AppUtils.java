@@ -1,9 +1,8 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.cb;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.api.client.json.JsonFactory;

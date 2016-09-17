@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.event;
+package nz.net.pseudo.cb.event;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import nz.net.pseudo.checkbook.AppUtils;
-import nz.net.pseudo.checkbook.R;
+import nz.net.pseudo.cb.AppUtils;
+import nz.net.pseudo.cb.R;
 
 /**
  * Created by i on 30/04/16.

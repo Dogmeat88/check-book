@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.event;
+package nz.net.pseudo.cb.event;
 
 
 /**

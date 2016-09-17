@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.event;
+package nz.net.pseudo.cb.event;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
@@ -17,8 +17,8 @@ import com.google.api.services.calendar.model.Events;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import nz.net.pseudo.checkbook.AppUtils;
-import nz.net.pseudo.checkbook.R;
+import nz.net.pseudo.cb.AppUtils;
+import nz.net.pseudo.cb.R;
 
 /**
  * Created by i on 25/04/16.

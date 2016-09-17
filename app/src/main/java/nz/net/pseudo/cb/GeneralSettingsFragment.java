@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.cb;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -12,10 +12,10 @@ import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 
-import nz.net.pseudo.checkbook.beacon.BeaconIface;
-import nz.net.pseudo.checkbook.databinding.GeneralSettingsFragmentBinding;
-import nz.net.pseudo.checkbook.event.EventsListIface;
-import nz.net.pseudo.checkbook.resource.ResourceListIface;
+import nz.net.pseudo.cb.beacon.BeaconIface;
+import nz.net.pseudo.cb.databinding.GeneralSettingsFragmentBinding;
+import nz.net.pseudo.cb.event.EventsListIface;
+import nz.net.pseudo.cb.resource.ResourceListIface;
 
 /**
  * Created by i on 10/05/16.

@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.beacon;
+package nz.net.pseudo.cb.beacon;
 
 import android.content.Context;
 import android.os.Build;
@@ -10,9 +10,9 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
 
-import nz.net.pseudo.checkbook.AppUtils;
-import nz.net.pseudo.checkbook.R;
-import nz.net.pseudo.checkbook.databinding.BeaconSettingsFragmentBinding;
+import nz.net.pseudo.cb.AppUtils;
+import nz.net.pseudo.cb.R;
+import nz.net.pseudo.cb.databinding.BeaconSettingsFragmentBinding;
 
 /**
  * Created by i on 10/05/16.

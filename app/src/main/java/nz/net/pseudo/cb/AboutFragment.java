@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.cb;
 
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -7,9 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import nz.net.pseudo.checkbook.databinding.AboutFragmentBinding;
-import nz.net.pseudo.checkbook.event.EventsListIface;
-import nz.net.pseudo.checkbook.resource.ResourceListIface;
+import nz.net.pseudo.cb.databinding.AboutFragmentBinding;
+import nz.net.pseudo.cb.event.EventsListIface;
+import nz.net.pseudo.cb.resource.ResourceListIface;
 
 /**
  * Created by i on 10/05/16.

@@ -1,7 +1,6 @@
-package nz.net.pseudo.checkbook.resource;
+package nz.net.pseudo.cb.resource;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.support.v4.content.ContextCompat;
@@ -21,7 +20,7 @@ import com.google.api.services.calendar.model.FreeBusyResponse;
 
 import java.util.ArrayList;
 
-import nz.net.pseudo.checkbook.R;
+import nz.net.pseudo.cb.R;
 
 /**
  * Created by i on 25/04/16.

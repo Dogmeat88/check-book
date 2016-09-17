@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook;
+package nz.net.pseudo.cb;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

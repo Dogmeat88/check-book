@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.resource;
+package nz.net.pseudo.cb.resource;
 
 import android.widget.Filter;
 

@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.resource;
+package nz.net.pseudo.cb.resource;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import nz.net.pseudo.checkbook.AppUtils;
-import nz.net.pseudo.checkbook.R;
+import nz.net.pseudo.cb.AppUtils;
+import nz.net.pseudo.cb.R;
 
 /**
  * Created by i on 24/04/16.

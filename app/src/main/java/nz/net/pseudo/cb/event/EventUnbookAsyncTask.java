@@ -1,4 +1,4 @@
-package nz.net.pseudo.checkbook.event;
+package nz.net.pseudo.cb.event;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -13,34 +13,36 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 
-import nz.net.pseudo.checkbook.R;
+import nz.net.pseudo.cb.R;
 
 /**
  * Created by i on 24/04/16.
  * QuickBook an event
  */
-public class EventGetAsyncTask extends AsyncTask<Void, Void, Event> {
+public class EventUnbookAsyncTask extends AsyncTask<Void, Void, Boolean> {
     private final String TAG = this.getClass().getSimpleName();
     private final Calendar mCalendar;
-    private final EventGetIface eventGetImpl;
-    private final String eventId;
+    private final EventUnbookIface eventUnbookImpl;
+    private final Event unbookEvent;
     private final Context context;
     private final ProgressDialog progressDialog;
+    private final boolean notifyAttendees;
 
-
-    public EventGetAsyncTask(
+    public EventUnbookAsyncTask(
               Context context
             , GoogleAccountCredential credential
-            , EventGetIface eventGetImpl
-            , String eventId
+            , EventUnbookIface eventUnbookImpl
+            , Event unbookEvent
+            , boolean notifyAttendees
     ) {
-        this.eventGetImpl=eventGetImpl;
-        this.eventId=eventId;
+        this.eventUnbookImpl = eventUnbookImpl;
+        this.unbookEvent = unbookEvent;
         this.context=context;
+        this.notifyAttendees=notifyAttendees;
 
         progressDialog = new ProgressDialog(context);
         progressDialog.setTitle(R.string.progress_dialogue_title);
-        progressDialog.setMessage(context.getString(R.string.event_get_progress_content));
+        progressDialog.setMessage(context.getString(R.string.event_book_progress_content));
 
         HttpTransport transport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -54,11 +56,11 @@ public class EventGetAsyncTask extends AsyncTask<Void, Void, Event> {
     }
 
     @Override
-    protected Event doInBackground(Void... params) {
+    protected Boolean doInBackground(Void... params) {
         try {
 
-            //Get the event
-            return mCalendar.events().get(context.getString(R.string.event_primary_email),this.eventId).execute();
+            mCalendar.events().delete(context.getString(R.string.event_primary_email), this.unbookEvent.getId()).setSendNotifications(this.notifyAttendees).execute();
+            return true;
 
         } catch (Exception e) {
             Log.e(TAG, "Webservice exception: "+e.getMessage());
@@ -67,12 +69,12 @@ public class EventGetAsyncTask extends AsyncTask<Void, Void, Event> {
     }
 
     @Override
-    protected void onPostExecute(Event event) {
+    protected void onPostExecute(Boolean isSuccess) {
         progressDialog.hide();
-        if(event!=null && event.getCreator()!=null){
-            eventGetImpl.onEventGetSuccess(event);
-        } else {
-            eventGetImpl.onFail(context.getString(R.string.event_get_error_title), context.getString(R.string.event_get_error_content));
+        if (isSuccess == null || !isSuccess) {
+            eventUnbookImpl.onFail(context.getString(R.string.event_unbook_error_title), context.getString(R.string.event_unbook_error_content));
+        }else if(isSuccess){
+            eventUnbookImpl.onEventUnbookSuccess();
         }
     }
 
